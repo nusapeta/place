@@ -1,0 +1,55 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check documentation
+        run: python3 scripts/check_consistency.py
+      - name: Reject data files
+        run: |
+          if git ls-files | grep -E '(\.pbf$|\.osm\.pbf$|\.idx$|\.idx\.json$)' \
+            | grep -v '^tests/fixtures/'; then
+            echo "PBF or index artifact tracked outside tests/fixtures" >&2
+            exit 1
+          fi
+          if git ls-files | grep -E '^bench-results/'; then
+            echo "benchmark output tracked" >&2
+            exit 1
+          fi
+      - name: Check fixture size
+        run: |
+          test ! -d tests/fixtures || \
+            find tests/fixtures -type f -name '*.pbf' -size +1M -print -quit | \
+            (! grep -q .)
+
+  rust:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.99.1
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Test
+        run: cargo test --all-features
+      - name: Audit
+        uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

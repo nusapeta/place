@@ -1,0 +1,9 @@
+.git
+.github
+docs
+scripts
+target
+tests
+*.pbf
+*.idx
+*.idx.json

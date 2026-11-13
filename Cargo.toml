@@ -1,0 +1,60 @@
+[package]
+name = "placeid"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+license = "MIT"
+description = "Self-hosted OpenStreetMap geocoder for Indonesia"
+repository = "https://github.com/arifsans/placeid"
+
+[features]
+default = ["build", "server"]
+build = ["dep:osmpbf", "dep:rayon"]
+server = [
+    "dep:axum",
+    "dep:metrics",
+    "dep:metrics-exporter-prometheus",
+    "dep:tokio",
+    "dep:tower",
+    "dep:tracing",
+    "dep:tracing-subscriber",
+]
+
+[dependencies]
+anyhow = "1"
+axum = { version = "0.8", optional = true }
+bytemuck = { version = "1", features = ["derive", "min_const_generics"] }
+clap = { version = "4", features = ["derive", "env"] }
+fst = { version = "0.4", features = ["levenshtein"] }
+libc = "0.2"
+memmap2 = "0.9"
+metrics = { version = "0.24", optional = true }
+metrics-exporter-prometheus = { version = "0.17", optional = true }
+osmpbf = { version = "0.3.8", optional = true }
+rayon = { version = "1", optional = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_urlencoded = "0.7"
+sha2 = "0.10"
+thiserror = "2"
+time = { version = "0.3", features = ["formatting", "parsing"] }
+tokio = { version = "1", features = ["macros", "net", "rt-multi-thread", "signal"], optional = true }
+tower = { version = "0.5", optional = true }
+tracing = { version = "0.1", optional = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"], optional = true }
+unicode-normalization = "0.1"
+
+[dev-dependencies]
+http-body-util = "0.1"
+tempfile = "3"
+tower = { version = "0.5", features = ["util"] }
+
+[[bin]]
+name = "placeid-build"
+path = "src/bin/placeid-build.rs"
+required-features = ["build"]
+
+[[bin]]
+name = "placeid-serve"
+path = "src/bin/placeid-serve.rs"
+required-features = ["server"]

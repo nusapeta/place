@@ -28,6 +28,11 @@ gh repo clone arifsans/placeid
 `gh auth setup-git` menyiapkan credential helper untuk `git push`. Jangan
 menaruh token di `.env`, dokumentasi, atau commit.
 
+Akses otomasi memakai akun `arifsans` dan scope `repo`. Asisten boleh memakai
+`gh` untuk membaca repo, mengelola issue, commit, push, dan pull request.
+Jangan mengubah visibilitas repo, menghapus branch, atau force push tanpa
+persetujuan.
+
 Alur perubahan:
 
 ```bash

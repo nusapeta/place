@@ -23,3 +23,6 @@
 
 # Fixture PBF kecil untuk test (dikecualikan dari larangan data)
 !tests/fixtures/*.pbf
+
+# Deploy lokal
+deploy/.env

@@ -109,6 +109,32 @@ Aturan container:
 - Batas memori 512 MB.
 - Healthcheck memanggil `/healthz`.
 
+### 3.1a Deploy homelab (Compose + tunnel 1Panel)
+
+Host `arifsani-pc1` memakai Compose, bukan `docker run`. File lengkap ada di
+[`deploy/README.md`](../deploy/README.md); ringkasnya:
+
+| Item | Nilai |
+|---|---|
+| Project Compose | `placeid` (`name:` eksplisit) |
+| Port host | `127.0.0.1:18092` (loopback, `8090` dipakai `nawasena-pb`) |
+| Alias jaringan | `placeid` di `1panel-network` (jaringan `cloudflared-tunnel`) |
+| Batas memori | `256m`, `pids_limit` 128, `cap_drop: ALL` |
+| Artifak | `~/Projects/placeid/data/{places.idx,places.idx.json,places.idx.sha256}` |
+
+```bash
+cd ~/Projects/placeid/deploy
+docker compose up -d            # .env memuat COMPOSE_FILE dengan override homelab
+curl -fsS 127.0.0.1:18092/healthz
+```
+
+Index dibangun di mesin lain (puncak RSS 8,2 GB) lalu dikirim sebagai artefak;
+image dipindahkan dengan `docker save | ssh ... docker load`. Jangan pernah
+membangun index di host dengan 7,8 GB RAM.
+
+Jika service dipublikasikan lewat domain, `/metrics` wajib ditutup di edge
+karena endpoint itu selalu aktif dan memuat ukuran serta umur index.
+
 ### 3.2 systemd
 
 ```ini

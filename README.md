@@ -168,6 +168,7 @@ kontrak ada di [docs/INDEX-FORMAT.md](docs/INDEX-FORMAT.md) dan
 | [docs/research/P4-EVIDENCE.md](docs/research/P4-EVIDENCE.md) | Relevance, reverse, beban, dan drill release |
 | [docs/research/NFR-REVIEW.md](docs/research/NFR-REVIEW.md) | Status gate NFR |
 | [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) | Lisensi, audit, dan atribusi |
+| [deploy/README.md](deploy/README.md) | Deploy container, Compose homelab, tunnel, update, rollback |
 | [docs/releases/0.1.0.md](docs/releases/0.1.0.md) | Catatan rilis |
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | Istilah teknis yang dipakai di repo |
 | [docs/decisions/](docs/decisions/) | Architecture Decision Records |

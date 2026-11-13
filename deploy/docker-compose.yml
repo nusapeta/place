@@ -1,0 +1,65 @@
+# Layanan produksi placeid: satu index Indonesia, satu container read-only.
+#   cd deploy && docker compose up -d
+# Index tidak dibangun di sini; artefak rilis dikirim ke ../data:
+#   places.idx, places.idx.json, places.idx.sha256.
+#
+# Nama project eksplisit: tanpa ini Compose memakai nama direktori (`deploy`),
+# sama dengan project routeid yang juga berada di direktori `deploy` di host.
+#
+# Satu container melayani satu index. Index immutable selama proses hidup:
+# index baru berarti restart (lihat docs/OPERATIONS.md §6).
+name: placeid
+
+x-placeid: &placeid
+  image: ${PLACEID_IMAGE:-placeid:0.1}
+  restart: unless-stopped
+  user: "65532:65532"
+  read_only: true
+  volumes:
+    # Index mmap read-only. Container tidak perlu akses tulis ke mana pun.
+    - ../data:/data:ro
+  environment:
+    RUST_LOG: info
+    PLACEID_LOG_FORMAT: json
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  pids_limit: 128
+  # Terukur: index 142 MB dipetakan read-only (halaman file bisa direklaim
+  # cgroup), RSS anon saat idle di bawah 20 MB.
+  mem_limit: 256m
+  memswap_limit: 256m
+  healthcheck:
+    test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8090/healthz"]
+    interval: 30s
+    timeout: 3s
+    retries: 3
+    start_period: 10s
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  placeid:
+    <<: *placeid
+    container_name: placeid
+    ports:
+      # Hanya loopback: jalur publik lewat Cloudflare Tunnel (lihat README),
+      # bukan port host. 18090/18091/18093 dipakai layanan lain di homelab.
+      - "127.0.0.1:18092:8090"
+    command:
+      - --index
+      - /data/places.idx
+      - --manifest
+      - /data/places.idx.json
+      # Gagal start kalau isi file tidak cocok dengan checksum manifest.
+      - --verify-checksum
+      # Container tetap mendengar di semua interface di dalam bridge docker;
+      # yang membatasi cakupan adalah port host di atas.
+      - --bind
+      - 0.0.0.0:8090
+    # /metrics ikut terbit di sini. Jangan arahkan domain publik apa adanya
+    # ke service ini tanpa menutup /metrics lebih dulu (README §4).

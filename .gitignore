@@ -1,0 +1,22 @@
+# Build output
+/target/
+**/*.rs.bk
+
+# Data OSM dan artefak index
+/data/
+*.osm.pbf
+*.pbf
+*.idx
+*.idx.json
+*.idx.tmp
+*.idx.json.tmp
+
+# Log dan hasil benchmark lokal
+*.log
+/bench-results/
+
+# Editor dan OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

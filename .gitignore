@@ -20,3 +20,6 @@
 .idea/
 .vscode/
 *.swp
+
+# Fixture PBF kecil untuk test (dikecualikan dari larangan data)
+!tests/fixtures/*.pbf

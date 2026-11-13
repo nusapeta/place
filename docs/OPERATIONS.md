@@ -7,8 +7,8 @@
 | Dokumen terkait | [SRS](SRS.md), [API](API.md), [BENCHMARKS](BENCHMARKS.md) |
 
 Dokumen ini adalah runbook untuk build, deploy, rebuild, dan rollback. Perintah
-CLI adalah kontrak target v1. Kode belum ada, jadi perintah belum bisa
-dijalankan sampai fase 1 selesai.
+CLI sudah tersedia di binary rilis. Angka kapasitas dan latensi adalah target
+sampai benchmark penuh dicatat di [BENCHMARKS](BENCHMARKS.md).
 
 ## 1. Prasyarat
 
@@ -45,10 +45,10 @@ target/release/placeid-serve
 mkdir -p /srv/placeid/releases/2026-11
 
 /usr/bin/time -v target/release/placeid-build \
-  --pbf /data/indonesia-latest.osm.pbf \
-  --out /srv/placeid/releases/2026-11/places.idx \
+  --input /data/indonesia-latest.osm.pbf \
+  --output /srv/placeid/releases/2026-11/places.idx \
   --manifest /srv/placeid/releases/2026-11/places.idx.json \
-  --workers 12
+  --verify
 ```
 
 Builder menulis ke file sementara lalu mengganti nama secara atomik. Jika
@@ -67,8 +67,9 @@ Verifikasi checksum penuh dengan menjalankan server sementara:
 ```bash
 target/release/placeid-serve \
   --index /srv/placeid/releases/2026-11/places.idx \
+  --manifest /srv/placeid/releases/2026-11/places.idx.json \
   --verify-checksum \
-  --addr 127.0.0.1:18090
+  --bind 127.0.0.1:18090
 ```
 
 Di terminal lain:
@@ -95,7 +96,8 @@ docker run --rm \
   -v /srv/placeid/current:/data:ro \
   placeid:0.1 \
   --index /data/places.idx \
-  --addr 0.0.0.0:8090
+  --manifest /data/places.idx.json \
+  --bind 0.0.0.0:8090
 ```
 
 Aturan container:
@@ -117,7 +119,8 @@ After=network-online.target
 [Service]
 ExecStart=/usr/local/bin/placeid-serve \
   --index /srv/placeid/current/places.idx \
-  --addr 127.0.0.1:8090
+  --manifest /srv/placeid/current/places.idx.json \
+  --bind 127.0.0.1:8090
 DynamicUser=yes
 ProtectSystem=strict
 ProtectHome=yes
@@ -136,14 +139,18 @@ WantedBy=multi-user.target
 
 | Environment | Flag | Default | Catatan |
 |---|---|---|---|
-| `PLACEID_INDEX` | `--index` | tidak ada | Wajib |
-| `PLACEID_ADDR` | `--addr` | `127.0.0.1:8090` | Alamat listen |
-| `PLACEID_LOG` | `--log` | `info` | `error`, `warn`, `info`, `debug` |
-| `PLACEID_MAX_CONCURRENCY` | `--max-concurrency` | jumlah vCPU | Batas request berat |
-| `PLACEID_VERIFY_CHECKSUM` | `--verify-checksum` | `false` | Verifikasi penuh saat start |
+| `RUST_LOG` | tidak ada | `info` | Filter `tracing`, misalnya `placeid=debug` |
+| `PLACEID_LOG_FORMAT` | tidak ada | teks | `json` menghasilkan satu objek per baris |
+| `PLACEID_WEIGHT_EXACT` | tidak ada | `3.0` | Bobot ranker |
+| `PLACEID_WEIGHT_PREFIX` | tidak ada | `1.5` | Bobot ranker |
+| `PLACEID_WEIGHT_COVERAGE` | tidak ada | `1.0` | Bobot ranker |
+| `PLACEID_WEIGHT_IMPORTANCE` | tidak ada | `0.5` | Bobot ranker |
+| `PLACEID_WEIGHT_PROXIMITY` | tidak ada | `0.5` | Bobot ranker |
 
-Flag mengalahkan environment. Jangan menaruh nilai rahasia di environment;
-layanan tidak butuh rahasia.
+Checksum index divalidasi saat start hanya jika `--verify-checksum`
+diberikan. Flag CLI mengalahkan nilai default; environment hanya mengatur
+filter log, format log, dan bobot ranker. Jangan menaruh nilai rahasia di
+environment; layanan tidak butuh rahasia.
 
 ## 5. Health dan monitoring
 
@@ -153,11 +160,17 @@ layanan tidak butuh rahasia.
 | `/version` | Saat deploy | Cocokkan checksum manifest |
 | `/metrics` | 30 detik | Scrape Prometheus |
 
+Retensi metrik: Prometheus menyimpan 15 hari, resolusi scrape 30 detik.
+Histogram memakai bucket default detik. Jangan menambahkan label query,
+koordinat, atau `place_id` ke metrik; kardinalitas dan privasi dilarang.
+Arsip agregat harian disimpan 90 hari di luar Prometheus. Dashboard ada di
+`ops/grafana-placeid.json`, alert di `ops/prometheus-alerts.yml`.
+
 Alert minimum:
 
 - `placeid_requests_total{status=~"5.."}` lebih dari 1% selama 10 menit.
 - p95 latency di atas target selama 10 menit.
-- RSS di atas 80 MB selama 10 menit.
+- Working set container di atas 480 MiB selama 10 menit, mendekati batas container 512 MB. Angka ini mencakup page cache index; beban 20 RPS terukur 150.180 KiB, sedangkan idle 6,1 MiB. NFR-004 mengikat RSS idle, bukan working set saat beban.
 - `/healthz` gagal 3 kali berturut-turut.
 - Index lebih tua dari 45 hari.
 - Build terakhir gagal.
@@ -177,10 +190,54 @@ Rebuild penuh, bukan update diff. Prosedur untuk dua replika:
 Jika hanya satu replika, hentikan server, ganti symlink `current`, lalu start.
 Downtime singkat tidak bisa dihindari pada mode satu replika.
 
+Promote dan rollback otomatis memakai symlink atomik:
+
 ```bash
-ln -sfn /srv/placeid/releases/2026-11 /srv/placeid/current
+scripts/promote_release.sh /srv/placeid/releases/2026-11 /srv/placeid
+systemctl restart placeid
+scripts/rollback_release.sh /srv/placeid
 systemctl restart placeid
 ```
+
+`promote_release.sh` menolak rilis tanpa `places.idx`, manifest, atau
+`places.idx.sha256`; membandingkan SHA-256 file index; memastikan
+`format_version == 1` dan `counts.features > 0`; menyimpan target sebelumnya
+di `previous`; lalu mengganti `current` dengan `mv -Tf`. Rollback menolak
+`previous` yang hilang atau tidak lengkap. Keduanya tidak me-restart service;
+restart tetap langkah eksplisit agar operator melihat downtime.
+
+### 6.1 Runbook rebuild penuh
+
+1. Pastikan disk untuk output minimal 250 MB dan RAM minimal 10 GB.
+2. Jalankan build ke direktori rilis baru, bukan menimpa `current`:
+
+   ```bash
+   python3 scripts/measure_build.py target/release/placeid-build \
+     --input /data/indonesia-latest.osm.pbf \
+     --output /srv/placeid/releases/2026-11/places.idx \
+     --manifest /srv/placeid/releases/2026-11/places.idx.json \
+     --verify
+   ```
+
+3. Buat checksum file dan periksa manifest:
+
+   ```bash
+   sha256sum /srv/placeid/releases/2026-11/places.idx \
+     > /srv/placeid/releases/2026-11/places.idx.sha256
+   jq '.format_version, .counts.features, .counts.skipped_features' \
+     /srv/placeid/releases/2026-11/places.idx.json
+   ```
+
+4. Jalankan server sementara pada port lain dengan `--verify-checksum`.
+5. Panggil `/healthz`, `/version`, satu search, satu reverse, satu lookup.
+6. Promosikan dengan `scripts/promote_release.sh`, restart, lalu ulangi smoke
+   pada port layanan.
+7. Simpan rilis sebelumnya minimal dua versi untuk rollback.
+8. Catat wall time, peak RSS, ukuran, checksum, dan jumlah fitur ke
+   [BENCHMARKS](BENCHMARKS.md).
+
+Build yang gagal di tengah tidak boleh menyentuh `current`. Builder menulis
+output dan manifest baru; verifikasi checksum dilakukan sebelum promote.
 
 ## 7. Rollback
 
@@ -228,7 +285,7 @@ antar proses.
 | Build lambat | Disk lambat atau polygon admin | Cek waktu per pass, matikan polygon opsional |
 | Checksum mismatch | File berubah atau build tidak selesai | Build ulang, jangan pakai file tersebut |
 | Permission denied | Volume read-only atau user salah | Cek UID container dan mode file |
-| Port sudah dipakai | Proses lain | Ganti `--addr` atau hentikan proses lama |
+| Port sudah dipakai | Proses lain | Ganti `--bind` atau hentikan proses lama |
 | Hasil kosong | Index salah atau query terlalu ketat | Uji dengan nama yang diketahui, cek manifest |
 
 ## 11. Keamanan operasi

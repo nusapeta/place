@@ -1,0 +1,390 @@
+{
+  "classes_top": [
+    [
+      "residential=residential",
+      264050
+    ],
+    [
+      "living_street=living_street",
+      82723
+    ],
+    [
+      "village=village",
+      76454
+    ],
+    [
+      "(none)=",
+      62545
+    ],
+    [
+      "place_of_worship=place_of_worship",
+      58047
+    ],
+    [
+      "yes=",
+      48217
+    ],
+    [
+      "school=school",
+      45704
+    ],
+    [
+      "tertiary=tertiary",
+      40639
+    ],
+    [
+      "trunk=trunk",
+      34131
+    ],
+    [
+      "hamlet=hamlet",
+      29626
+    ],
+    [
+      "administrative=administrative",
+      27530
+    ],
+    [
+      "secondary=secondary",
+      26020
+    ],
+    [
+      "primary=primary",
+      24998
+    ],
+    [
+      "restaurant=restaurant",
+      24756
+    ],
+    [
+      "government=",
+      21660
+    ],
+    [
+      "peak=",
+      20986
+    ],
+    [
+      "unclassified=unclassified",
+      17083
+    ],
+    [
+      "river=",
+      15968
+    ],
+    [
+      "convenience=",
+      12741
+    ],
+    [
+      "service=service",
+      12168
+    ],
+    [
+      "hotel=",
+      11218
+    ],
+    [
+      "house=",
+      11044
+    ],
+    [
+      "bus_stop=bus_stop",
+      11039
+    ],
+    [
+      "rail=",
+      9069
+    ],
+    [
+      "cafe=cafe",
+      8896
+    ],
+    [
+      "bank=bank",
+      8521
+    ],
+    [
+      "clinic=clinic",
+      8355
+    ],
+    [
+      "motorway=motorway",
+      7663
+    ],
+    [
+      "kindergarten=kindergarten",
+      6932
+    ],
+    [
+      "islet=islet",
+      6438
+    ],
+    [
+      "stream=",
+      5479
+    ],
+    [
+      "pitch=",
+      5250
+    ],
+    [
+      "kiosk=",
+      5003
+    ],
+    [
+      "fuel=fuel",
+      4911
+    ],
+    [
+      "park=",
+      4761
+    ],
+    [
+      "marketplace=marketplace",
+      4696
+    ],
+    [
+      "school=",
+      4680
+    ],
+    [
+      "guest_house=",
+      4451
+    ],
+    [
+      "neighbourhood=neighbourhood",
+      4280
+    ],
+    [
+      "fast_food=fast_food",
+      4031
+    ]
+  ],
+  "counts": {
+    "name_bytes": 21243045,
+    "node_named": 346846,
+    "norm_bytes": 20934951,
+    "relation_named": 39027,
+    "token_occurrences": 3453904,
+    "variant_bytes": 1972346,
+    "variant_count": 118348,
+    "way_named": 878076
+  },
+  "duplicate_names": 129914,
+  "elapsed_s": 24.0,
+  "feature_total": 1263949,
+  "grid_cells": {
+    "100000": 128669,
+    "200000": 82515,
+    "500000": 33867
+  },
+  "max_name_dupes": [
+    [
+      "indomaret",
+      4141
+    ],
+    [
+      "alfamart",
+      3591
+    ],
+    [
+      "linha de agua",
+      2192
+    ],
+    [
+      "toko",
+      1964
+    ],
+    [
+      "blok",
+      1875
+    ],
+    [
+      "telkomsel",
+      1546
+    ],
+    [
+      "pertamina",
+      1526
+    ],
+    [
+      "gudang",
+      1482
+    ],
+    [
+      "bri",
+      1341
+    ],
+    [
+      "jalan jenderal sudirman",
+      1336
+    ]
+  ],
+  "source": {
+    "bytes": 1741650872,
+    "measured_at": "2026-11-13",
+    "pbf": "indonesia-latest.osm.pbf",
+    "tool": "pyosmium 4.x, Python 3.14.8"
+  },
+  "token_len_hist": {
+    "1": 12,
+    "10": 12875,
+    "11": 7866,
+    "12": 4353,
+    "13": 2167,
+    "14": 1139,
+    "15": 544,
+    "16": 317,
+    "17": 184,
+    "18": 111,
+    "19": 53,
+    "2": 1134,
+    "20": 38,
+    "21": 24,
+    "22": 19,
+    "23": 13,
+    "24": 4,
+    "25": 5,
+    "26": 2,
+    "27": 1,
+    "28": 1,
+    "29": 2,
+    "3": 7091,
+    "30": 2,
+    "31": 1,
+    "38": 1,
+    "4": 13817,
+    "5": 26350,
+    "50": 1,
+    "6": 31596,
+    "7": 30617,
+    "8": 25498,
+    "9": 19100
+  },
+  "token_top": [
+    [
+      "jalan",
+      430290
+    ],
+    [
+      "gang",
+      82445
+    ],
+    [
+      "raya",
+      39776
+    ],
+    [
+      "masjid",
+      36583
+    ],
+    [
+      "1",
+      25242
+    ],
+    [
+      "ii",
+      24244
+    ],
+    [
+      "al",
+      23904
+    ],
+    [
+      "desa",
+      23448
+    ],
+    [
+      "kantor",
+      23070
+    ],
+    [
+      "2",
+      22502
+    ],
+    [
+      "negeri",
+      20363
+    ],
+    [
+      "sd",
+      18536
+    ],
+    [
+      "indomaret",
+      16971
+    ],
+    [
+      "iii",
+      16508
+    ],
+    [
+      "pulau",
+      14615
+    ],
+    [
+      "tol",
+      14423
+    ],
+    [
+      "haji",
+      14347
+    ],
+    [
+      "sungai",
+      13838
+    ],
+    [
+      "indah",
+      12513
+    ],
+    [
+      "timur",
+      12387
+    ],
+    [
+      "gunung",
+      12221
+    ],
+    [
+      "iv",
+      12168
+    ],
+    [
+      "taman",
+      12026
+    ],
+    [
+      "jalur",
+      12008
+    ],
+    [
+      "barat",
+      11782
+    ],
+    [
+      "3",
+      11620
+    ],
+    [
+      "rw",
+      11578
+    ],
+    [
+      "sdn",
+      10817
+    ],
+    [
+      "bank",
+      10231
+    ],
+    [
+      "kereta",
+      10137
+    ]
+  ],
+  "token_total_chars": 1323890,
+  "unique_names": 612877,
+  "unique_tokens": 184938
+}

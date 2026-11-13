@@ -1,0 +1,286 @@
+# query	accepted	split	category	place_id
+jakarta	jakarta	tune	region	2251799843624880
+bandung	bandung	tune	region	2251800077844143
+surabaya	surabaya	tune	region	2251802700114900
+medan	medan	tune	region	2251800081239462
+semarang	semarang	tune	region	2251800070240480
+makassar	makassar	tune	region	2251800111091930
+palembang	palembang	tune	region	2251801895135691
+denpasar	denpasar	tune	region	2251800087799045
+yogyakarta	yogyakarta	tune	region	2251801204060959
+malang	malang	tune	region	2251802331858600
+bekasi	bekasi	tune	region	2251800132567457
+depok	depok	tune	region	2251801454935464
+tangerang	tangerang	tune	region	2251800132566585
+bogor	bogor	tune	region	2251801122358982
+surakarta	surakarta	tune	region	2251800073804654
+pekanbaru	pekanbaru	tune	region	2251805467759787
+padang	padang	tune	region	2251802594836607
+banjarmasin	banjarmasin	tune	region	2251800358202621
+pontianak	pontianak	tune	region	2251800358199111
+manado	manado	tune	region	2251800131214725
+jayapura	jayapura	tune	region	6755399448810193
+ambon	ambon	tune	region	2251800107329631
+mataram	mataram	tune	region	2251800227136302
+kupang	kupang	tune	region	2251800075999393
+samarinda	samarinda	tune	region	2251800338962505
+balikpapan	balikpapan	tune	region	2251802231532445
+bengkulu	bengkulu	tune	region	2251802594836606
+jambi	jambi	tune	region	2251805467785476
+cirebon	cirebon	tune	region	2251801955947057
+banda aceh	banda aceh	tune	region	2251800081241311
+kota ayodya	kota ayodya|ayodya	tune	region	2251805937826834
+kabupaten bekasi	kabupaten bekasi|bekasi	tune	region	2251800132567457
+kota tinggi	kota tinggi|tinggi	tune	region	6755399459772024|2251813066216627
+kabupaten sumba barat daya	kabupaten sumba barat daya|sumba barat daya	tune	region	4503599855268052|6755399452281077
+kota cirebon	kota cirebon|cirebon	tune	region	2251801955947057
+kota palu	kota palu|palu	tune	region	2251801085549403|2251800109795364
+kabupaten banggai	kabupaten banggai|banggai	tune	region	2251801122946459|6755399445325451
+kota harapan indah 2	kota harapan indah 2|harapan indah 2	tune	region	2251809015107499
+kabupaten kepulauan talaud	kabupaten kepulauan talaud|kepulauan talaud	tune	region	6755399445339111|6755399460494185
+kota kembang	kota kembang|kembang	tune	region	2251806885337633|6755399446671272
+kota wisata	kota wisata|wisata	tune	region	2251804054650381|4503600026946084
+kabupaten manggarai timur	kabupaten manggarai timur|manggarai timur	tune	region	2251804546032722|6755399452284127
+kabupaten karawang	kabupaten karawang|karawang	tune	region	2251803781007708
+kota deltamas	kota deltamas|deltamas	tune	region	4503600615082208
+kabupaten karo	kabupaten karo|karo	tune	region	2251801122077119
+kota madiun	kota madiun|madiun	tune	region	2251802349544596
+kabupaten pakpak bharat	kabupaten pakpak bharat|pakpak bharat	tune	region	6755399449539092
+kota mutiara lebak	kota mutiara lebak|mutiara lebak	tune	region	4503601059560060
+kota besi	kota besi|besi	tune	region	2251801121986275|2251801122324855
+kabupaten buol	kabupaten buol|buol	tune	region	2251801122345622
+kota bengkalis	kota bengkalis|bengkalis	tune	region	2251812050890754|2251803001662871
+kota kasablanka	kota kasablanka|kasablanka	tune	region	2251811769983387
+kabupaten banggai kepulauan	kabupaten banggai kepulauan|banggai kepulauan	tune	region	2251803044922433|6755399445325551
+kota pari i	kota pari i|pari i	tune	region	2251808563711061
+kota pari viii	kota pari viii|pari viii	tune	region	2251808563711058
+kota raya	kota raya|raya	tune	region	2251801121990428|2251813983675787
+kota parit	kota parit|parit	tune	region	2251812143722848|2251801122064831
+kota beringin	kota beringin|beringin	tune	region	2251801122155084|6755399461108494
+kota kediri	kota kediri|kediri	tune	region	2251800372562339
+kota peruri	kota peruri|peruri	tune	region	4503601115488337|4503600198351513
+kota gunungsitoli nias barat	kota gunungsitoli nias barat|gunungsitoli nias barat	tune	region	4503600239368679
+kota baru driyorejo	kota baru driyorejo|baru driyorejo	tune	region	4503600697023571
+kota wisata commpark	kota wisata commpark|wisata commpark	tune	region	4503600895399755
+kota juang	kota juang|juang	tune	region	6755399455790411
+kota timur	kota timur|timur	tune	region	2251813751358618
+kota bukit indah industrial city	kota bukit indah industrial city|bukit indah industrial city	tune	region	4503600389694242
+kota sedanau	kota sedanau|sedanau	tune	region	4503599803347158|2251801122155683
+kota raja	kota raja|raja	tune	region	2251801122149579|2251801122092475
+kota baru santan	kota baru santan|baru santan	tune	region	2251801121980866
+kabupaten sumba timur	kabupaten sumba timur|sumba timur	tune	region	2251801861160814|6755399448294833
+kota aman	kota aman|aman	tune	region	2251801122011677|4503599678180254
+kabupaten labuhanbatu utara	kabupaten labuhanbatu utara|labuhanbatu utara	tune	region	6755399449539101
+kota cinema	kota cinema|cinema	tune	region	4503600405230479
+kota jin	kota jin|jin	tune	region	2251801122342039
+kota raya darat	kota raya darat|raya darat	tune	region	2251801122049027
+kota baru parahyangan	kota baru parahyangan|baru parahyangan	tune	region	6755399454208207
+kota gading	kota gading|gading	tune	region	2251801122160985|6755399446671264
+kota besi hulu	kota besi hulu|besi hulu	tune	region	2251801122300748
+kota kisaran timur	kota kisaran timur|kisaran timur	tune	region	6755399462446029|2251801122078596
+kota rikitgaib	kota rikitgaib|rikitgaib	tune	region	2251813166281512
+kota kembang permai	kota kembang permai|kembang permai	tune	region	2251812897414126
+kota gunungsitoli nias utara	kota gunungsitoli nias utara|gunungsitoli nias utara	tune	region	4503600239368672
+kota pari iii	kota pari iii|pari iii	tune	region	2251808563711059
+kota gapura	kota gapura|gapura	tune	region	2251801122064188|2251811053587183
+kota bunga gate 2	kota bunga gate 2|bunga gate 2	tune	region	2251803314327252
+kota lama	kota lama|lama	tune	region	2251811985776212|2251801122034900
+kota jababeka	kota jababeka|jababeka	tune	region	2251809665748356
+kabupaten mempawah	kabupaten mempawah|mempawah	tune	region	2251800514455953
+kota baru seberida	kota baru seberida|baru seberida	tune	region	2251801122143701
+kota baru purwokerto	kota baru purwokerto|baru purwokerto	tune	region	2251809668254425
+monumen nasional	monumen nasional	tune	poi	2251811378167368
+borobudur	borobudur	tune	poi	2251812207612741
+prambanan	prambanan	tune	poi	6755399446671067
+danau toba	danau toba	tune	poi	2251808402840677
+gunung bromo	gunung bromo	tune	poi	4503599942645923
+kuta	kuta	tune	poi	6755399448816734
+sanur	sanur	tune	poi	6755399461503021
+ubud	ubud	tune	poi	6755399458880459
+nusa dua	nusa dua	tune	poi	4503600843556000
+tanjung priok	tanjung priok|pelabuhan tanjung priok	tune	poi	6755399446858142|2251802607989154
+jakarta pusat	jakarta pusat	tune	poi	6755399448681721
+jakarta selatan	jakarta selatan	tune	poi	6755399446858182
+jakarta barat	jakarta barat	tune	poi	6755399448681745
+jakarta timur	jakarta timur	tune	poi	6755399446858185
+jakarta utara	jakarta utara	tune	poi	6755399448681746
+kota bandung	kota bandung|bandung	tune	poi	2251800077844143
+kota surabaya	kota surabaya|surabaya	tune	poi	2251802700114900
+kota medan	kota medan|medan	tune	poi	2251801122020752|2251800081239462
+kota semarang	kota semarang|semarang	tune	poi	2251800070240480
+kota makassar	kota makassar|makassar	tune	poi	2251800111091930
+kabupaten bogor	kabupaten bogor|bogor	tune	poi	2251801122358982
+kecamatan gambir	kecamatan gambir|gambir	tune	poi	6755399448369438
+kelurahan gambir	kelurahan gambir|gambir	tune	poi	6755399448369438
+stasiun gambir	stasiun gambir	tune	poi	2251806036598148
+stasiun bandung	stasiun bandung	tune	poi	2251810952279169
+masjid istiqlal	masjid istiqlal	tune	poi	6755399450682980
+masjid raya bandung	masjid raya bandung	tune	poi	4503599785208762
+katedral jakarta	katedral jakarta	tune	poi	4503599724567194
+pasar baru	pasar baru	tune	poi	6755399446857878
+pasar tanah abang	pasar tanah abang|tanah abang market	tune	poi	2251804120928839
+blok m	blok m	tune	poi	2251808936286492
+senayan	senayan	tune	poi	6755399446858043
+gelora bung karno	gelora bung karno|gelanggang olahraga bung karno	tune	poi	2251811062023221|4503600280455466
+taman mini indonesia indah	taman mini indonesia indah	tune	poi	4503599656204985
+ragunan	ragunan	tune	poi	6755399446858118
+ancol	ancol	tune	poi	6755399446857865
+dunia fantasi	dunia fantasi	tune	poi	2251811105260493
+grand indonesia	grand indonesia|grand indonesia shopping town	tune	poi	4503600602252596
+plaza indonesia	plaza indonesia	tune	poi	2251805647322236
+sarinah	sarinah|sarinah mall	tune	poi	4503599724920813|4503600055736446
+bantarjati	bantarjati	tune	poi	6755399461013611
+aceh selatan	aceh selatan	tune	poi	6755399449978050
+kalijambe	kalijambe	tune	poi	6755399459518702
+kampung kapodi	kampung kapodi	tune	poi	2251806279831512
+green savana	green savana	tune	poi	4503600935253681
+cibrek	cibrek	tune	poi	2251813166081459
+tebat patah	tebat patah	tune	poi	2251801122029677
+pulau wataropop kapacol lu	pulau wataropop kapacol lu	tune	poi	4503600181506925
+jatilawang	jatilawang	tune	poi	2251810771381849
+weron	weron	tune	poi	2251810797399712
+lamteumen barat	lamteumen barat	holdout	poi	6755399450063785
+rempong	rempong	holdout	poi	2251801625081242
+payo rapuih	payo rapuih	holdout	poi	2251805112072448
+magersari	magersari	holdout	poi	6755399453604680
+kuala teladas	kuala teladas	holdout	poi	6755399460256426
+sidorejo	sidorejo	holdout	poi	6755399444870250
+perbatasan ulujadi palu timur	perbatasan ulujadi palu timur	holdout	poi	4503599944793821
+dempyong	dempyong	holdout	poi	2251811190911826
+data kampuang dadok	data kampuang dadok	holdout	poi	2251812897931158
+yenburwo	yenburwo	holdout	poi	2251801122320028
+kalibanteng kulon	kalibanteng kulon	holdout	poi	6755399449230619
+manola	manola	holdout	poi	2251802023279943
+urung dora	urung dora	holdout	poi	2251809802961156
+sucairau	sucairau	holdout	poi	2251801599093441
+bukittinggi	bukittinggi	holdout	poi	2251800150329051
+ilohuuwa	ilohuuwa	holdout	poi	2251803046255204
+balang sembo	balang sembo	holdout	poi	2251812197555065
+ambunu	ambunu	holdout	poi	2251801122366261
+karangsari	karangsari	holdout	poi	6755399446671240
+semanding	semanding	holdout	poi	2251808840590417
+hiliorudua	hiliorudua	holdout	poi	2251811638196447
+krajan	krajan	holdout	poi	6755399460823305
+tinjomoyo	tinjomoyo	holdout	poi	6755399449460877
+parlemento	parlemento	holdout	poi	2251801599092091
+bogo	bogo	holdout	poi	2251801122405334
+panyabangan	panyabangan	holdout	poi	2251813071839079
+aere	aere	holdout	poi	2251801085501645
+labuk	labuk	holdout	poi	2251801122296999
+sali kecil	sali kecil	holdout	poi	2251801122327611
+pulau miot monebai	pulau miot monebai	holdout	poi	4503599654316077
+umeanyar	umeanyar	holdout	poi	6755399461503445
+pulo balu	pulo balu	holdout	poi	4503599686379577
+bitana	bitana	holdout	poi	2251801599067771
+pasar minggu	pasar minggu	holdout	poi	6755399446858152
+dusun dua abak	dusun dua abak	holdout	poi	2251803053780455
+sidamulya	sidamulya	holdout	poi	2251801122346796
+lingk taman seruni	lingk taman seruni	holdout	poi	2251802504360026
+kampung baru	kampung baru	holdout	poi	6755399450063793
+hakimtunggulnaru	hakimtunggulnaru	holdout	poi	2251813166034075
+pulau jonggi	pulau jonggi	holdout	poi	4503600321649583
+jalan jenderal sudirman	jalan jenderal sudirman	tune	road	4503599638962349
+jalan malioboro	jalan malioboro	tune	road	4503599765483029
+jalan braga	jalan braga	tune	road	4503599631939530
+jalan gatot subroto	jalan gatot subroto	tune	road	4503599828271433
+jalan diponegoro	jalan diponegoro	tune	road	4503600189731288
+jalan merdeka	jalan merdeka	tune	road	4503599631621768
+jalan basuki rahmat	jalan basuki rahmat	tune	road	4503599664412454
+jalan ahmad yani	jalan ahmad yani	tune	road	4503599637231394
+jalan pemuda	jalan pemuda	tune	road	4503599651151930
+bandara soekarno hatta	bandara soekarno hatta	tune	road	2251811848823239
+jalan golf selatan i	jalan golf selatan i	holdout	road	4503600248222497
+jalan sutorejo prima selatan v	jalan sutorejo prima selatan v	holdout	road	4503599787552934
+jalan sentanu ii	jalan sentanu ii	holdout	road	4503600210534437
+jalan asta dewa	jalan asta dewa	holdout	road	4503600936314123
+jalan perumahan alam meninting	jalan perumahan alam meninting	holdout	road	4503599889688613
+jalan trowulan ii b	jalan trowulan ii b	holdout	road	4503599933567396
+jalan dumai pelintung batas kabupaten bengkalis	jalan dumai pelintung batas kabupaten bengkalis|jalan dumai pelintung batas kab bengkalis	holdout	road	4503599940706900
+jalan yapong	jalan yapong	holdout	road	4503599944857725
+jalan batu pirus 4	jalan batu pirus 4	holdout	road	4503600206544288
+jalan jembatan besi i	jalan jembatan besi i	holdout	road	4503599662679362
+jalan raja junjungan lubis	jalan raja junjungan lubis	holdout	road	4503600072886366
+jalan edy raya	jalan edy raya	holdout	road	4503600383515644
+jalan nuansa kori xvi	jalan nuansa kori xvi	holdout	road	4503601134795545
+jalan taruma kencana	jalan taruma kencana	holdout	road	4503599658247309
+jalan c mihing iv	jalan c mihing iv	holdout	road	4503600051667723
+jalan pejaten barat iii	jalan pejaten barat iii	holdout	road	4503600134572501
+jalan kerukunan x	jalan kerukunan x	holdout	road	4503600059249466
+jalan cisaranten kulon ii	jalan cisaranten kulon ii	holdout	road	4503600182191535
+jalan pluit karang indah xi	jalan pluit karang indah xi	holdout	road	4503599656709077
+jalan melati b3	jalan melati b3	holdout	road	4503600247600425
+jalan kagok	jalan kagok	holdout	road	4503599944231498
+jalan bbd vii	jalan bbd vii	holdout	road	4503600106844615
+jalan wijaya kusuma ii gang 12	jalan wijaya kusuma ii gang 12	holdout	road	4503599746695316
+jalan kejora 2	jalan kejora 2	holdout	road	4503600073379954
+jalan ultra violet	jalan ultra violet	holdout	road	4503599755541127
+jalan gayamasari i g	jalan gayamasari i g	holdout	road	4503600190675565
+jalan ali ahmad	jalan ali ahmad	holdout	road	4503600040143045
+jalan tjampuhan barat	jalan tjampuhan barat	holdout	road	4503600214720826
+jalan gunung jati tengah i	jalan gunung jati tengah i	holdout	road	4503600197286573
+jalan tegalmulyo ii	jalan tegalmulyo ii	holdout	road	4503599766598242
+jalan barru 1	jalan barru 1	holdout	road	4503599818175205
+jalan nyai ageng arem arem	jalan nyai ageng arem arem	holdout	road	4503599783939522
+jalan dusun kayen	jalan dusun kayen	holdout	road	4503599991425604
+jalan taman bendungan jatiluhur iv	jalan taman bendungan jatiluhur iv	holdout	road	4503600128216196
+jalan haji suaib i gang 4	jalan haji suaib i gang 4	holdout	road	4503600135480001
+jalan pluto utara vii	jalan pluto utara vii	holdout	road	4503600283551720
+jalan pulo kambing i	jalan pulo kambing i	holdout	road	2251811735327905
+jalan sawah perbatasan	jalan sawah perbatasan	holdout	road	4503600624470564
+jalan karang arum ix	jalan karang arum ix	holdout	road	4503600192992992
+jalan margawangi iii	jalan margawangi iii	holdout	road	4503600511977932
+jalan hutama bakti	jalan hutama bakti	holdout	road	4503600308419581
+jalan gaharu 17	jalan gaharu 17	holdout	road	4503600377223839
+jalan mpr iii dalam	jalan mpr iii dalam	holdout	road	4503599659571396
+jalan tenggilis lama iii c	jalan tenggilis lama iii c	holdout	road	4503600087289249
+jalan menteweng	jalan menteweng	holdout	road	4503599997484295
+jalan ratu flamboyan barat vi	jalan ratu flamboyan barat vi	holdout	road	4503599657496847
+jalan datuk syahbandar	jalan datuk syahbandar	holdout	road	4503600288905564
+jalan pejuangan raya	jalan pejuangan raya	holdout	road	4503600200345303
+jalan pluit karang karya barat	jalan pluit karang karya barat	holdout	road	4503599661605199
+jalan kelayan b	jalan kelayan b	holdout	road	4503600043889868
+kota tua	kota tua|kota tua jakarta|tua	holdout	alias	4503600715545855|6755399461503056
+lawang sewu	lawang sewu	holdout	alias	4503600066617128
+tugu jogja	tugu jogja|tugu pal putih yogyakarta|tugu yogyakarta	holdout	alias	4503600185306418
+malioboro mall	malioboro mall	holdout	alias	4503600954542002
+pantai kuta	pantai kuta	holdout	alias	6755399444955460
+pantai seminyak	pantai seminyak	holdout	alias	2251810412088406
+danau batur	danau batur	holdout	alias	6755399450803627
+gunung rinjani	gunung rinjani	holdout	alias	2251800883872786
+gunung merapi	gunung merapi	holdout	alias	2251804326410503
+gunung semeru	gunung semeru	holdout	alias	4503599769095011
+taman nasional komodo	taman nasional komodo|taman nasonal komodo	holdout	alias	2251806212279557
+raja ampat	raja ampat	holdout	alias	6755399456010727
+labuan bajo	labuan bajo	holdout	alias	2251801085541260
+likupang	likupang	holdout	alias	2251814151526672
+mandalika	mandalika	holdout	alias	2251813120575171
+danau singkarak	danau singkarak	holdout	alias	6755399453458803
+danau maninjau	danau maninjau	holdout	alias	6755399453532203
+bukit tinggi	bukit tinggi	holdout	alias	2251801085514818
+padang panjang	padang panjang	holdout	alias	2251800409029849
+pelabuhan tanjung priok	pelabuhan tanjung priok	holdout	alias	2251802607989154
+jogja	yogyakarta	holdout	alias	2251801204060959
+jogjakarta	yogyakarta	holdout	alias	2251801204060959
+solo	surakarta	holdout	alias	2251800073804654
+jkt	jkt|daerah khusus ibukota jakarta|jakarta	holdout	alias	6755399447418678|2251799843624880
+sby	surabaya	holdout	alias	2251802700114900
+jl jenderal sudirman	jalan jenderal sudirman	holdout	alias	4503599638962349
+jl malioboro	jalan malioboro	holdout	alias	4503599765483029
+jl braga	jalan braga	holdout	alias	4503599631939530
+monas	monas|monumen nasional	holdout	alias	2251801122363396|2251811378167368
+tugu monas	monumen nasional	holdout	alias	2251811378167368
+soekarno hatta	soekarno hatta|bandara soekarno-hatta	holdout	alias	4503599890874481|2251811848823239
+soetta	bandara soekarno-hatta	holdout	alias	2251811848823239
+tanjung priok	tanjung priok|pelabuhan tanjung priok	holdout	alias	6755399446858142|2251802607989154
+pasar baru	pasar baru	holdout	alias	6755399446857878
+pasar tanah abang	tanah abang market	holdout	alias	2251804120928839
+blok m	blok m	holdout	alias	2251808936286492
+senayan	senayan	holdout	alias	6755399446858043
+ancol	ancol	holdout	alias	6755399446857865
+ragunan	ragunan	holdout	alias	6755399446858118
+dunia fantasi	dunia fantasi	holdout	alias	2251811105260493
+grand indonesia	grand indonesia shopping town	holdout	alias	4503600602252596
+plaza indonesia	plaza indonesia	holdout	alias	2251805647322236
+sarinah	sarinah|sarinah mall	holdout	alias	4503599724920813|4503600055736446
+kota tua	kota tua|kota tua jakarta|tua	holdout	alias	4503600715545855|6755399461503056
+lawang sewu	lawang sewu	holdout	alias	4503600066617128

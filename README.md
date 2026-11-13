@@ -10,10 +10,58 @@ crate Rust dengan dua binary, builder batch dan server HTTP, satu file index
 > footprint: one Rust crate with two binaries, one server process, one
 > memory-mapped index file, and no database service.
 
-Status: **fondasi dokumen, belum ada kode**. Dokumen di repo ini menetapkan
-batas produk, requirement, kontrak API, format index, backlog, riset metode,
-dan rencana verifikasi. Angka performa di dokumen adalah target awal, bukan
-hasil pengukuran, kecuali disebut lain.
+Status: **v1 kandidat rilis**. Builder, server, format index, dataset uji,
+container, metrik, alert, dan prosedur promote/rollback sudah ada. Angka
+performa di [docs/BENCHMARKS.md](docs/BENCHMARKS.md) adalah hasil pengukuran
+pada mesin uji, bukan target. Catatan rilis:
+[docs/releases/0.1.0.md](docs/releases/0.1.0.md).
+
+## Mulai cepat
+
+```bash
+export PATH="$HOME/.cargo/bin:$PATH"
+cargo build --release --bins
+
+target/release/placeid-build \
+  --input data/indonesia-latest.osm.pbf \
+  --output /data/places.idx \
+  --manifest /data/places.idx.json \
+  --verify
+
+target/release/placeid-serve \
+  --index /data/places.idx \
+  --manifest /data/places.idx.json \
+  --bind 127.0.0.1:8090
+```
+
+Uji endpoint:
+
+```bash
+curl 'http://127.0.0.1:8090/search?q=monas&limit=3'
+curl 'http://127.0.0.1:8090/reverse?lat=-6.175392&lon=106.827153'
+curl 'http://127.0.0.1:8090/lookup?osm_ids=N1308678148'
+curl 'http://127.0.0.1:8090/healthz'
+curl 'http://127.0.0.1:8090/metrics'
+```
+
+Build penuh Indonesia memerlukan PBF dan RAM puncak sekitar 8 GiB. Index
+final 141.997.032 B untuk 1.226.755 fitur. Container memakai port 8090 dan
+mengharapkan index di `/data`.
+
+## Toolchain
+
+Toolchain dipin di `rust-toolchain.toml`: Rust `1.99.1` dengan `rustfmt` dan
+`clippy`, profil minimal. Pasang rustup, lalu jalankan:
+
+```bash
+rustup show
+cargo fmt --version
+cargo clippy --version
+```
+
+`rustup show` harus menampilkan `1.99.1-x86_64-unknown-linux-gnu` (atau
+toolchain host yang setara). Tanpa rustup, file pin tidak berlaku dan versi
+sistem bisa berbeda.
 
 Repo: <https://github.com/arifsans/placeid> (private). Clone, issue, commit,
 dan push memakai GitHub CLI. Alur lengkap ada di
@@ -117,6 +165,10 @@ kontrak ada di [docs/INDEX-FORMAT.md](docs/INDEX-FORMAT.md) dan
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Fase pekerjaan dan exit criteria |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | Task yang bisa dilacak, ukuran, dependensi, acceptance |
 | [docs/research/LIGHTWEIGHT-METHODS.md](docs/research/LIGHTWEIGHT-METHODS.md) | Riset metode ringan dan akurat, bukti, rekomendasi |
+| [docs/research/P4-EVIDENCE.md](docs/research/P4-EVIDENCE.md) | Relevance, reverse, beban, dan drill release |
+| [docs/research/NFR-REVIEW.md](docs/research/NFR-REVIEW.md) | Status gate NFR |
+| [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) | Lisensi, audit, dan atribusi |
+| [docs/releases/0.1.0.md](docs/releases/0.1.0.md) | Catatan rilis |
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | Istilah teknis yang dipakai di repo |
 | [docs/decisions/](docs/decisions/) | Architecture Decision Records |
 

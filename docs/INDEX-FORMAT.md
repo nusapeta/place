@@ -224,6 +224,12 @@ Row index adalah posisi record di section places, dimulai dari 0. Karena
 places diurutkan berdasarkan `place_id`, row index stabil untuk index yang
 sama.
 
+Format v1 memakai `u32` absolut, bukan delta varint. **Measured** pada index
+Indonesia: 4.834.910 row postings total; subset token FST 3.608.155 row.
+Encoding absolut 14.432.620 byte, delta varint 5.767.275 byte (rasio 2,503),
+dan decode varint 2,56 ns per posting. Penghematan 8,7 MB tidak sebanding
+dengan kehilangan random access dan biaya decode saat startup.
+
 ## 10. Name FST
 
 Section berisi byte FST. Key adalah nama lengkap ternormalisasi. Value adalah
@@ -232,6 +238,8 @@ yang bisa menjadi value FST. Untuk kasus itu:
 
 - Name FST menyimpan row dengan `importance` tertinggi.
 - Semua place tetap bisa ditemukan lewat token FST.
+- Query nama duplikat **MUST** mengembalikan lebih dari satu kandidat jika
+  `limit` cukup; ini diuji dengan `Indomaret` pada fixture.
 - Name FST bukan satu-satunya jalur pencarian.
 
 Aturan ini menghindari struktur value berulang di FST. Dedup penuh dilakukan
@@ -248,19 +256,30 @@ Section dimulai dengan header 40 byte:
 | 8 | 4 | `min_lon_e7` | |
 | 12 | 4 | `cols` | Jumlah kolom |
 | 16 | 4 | `rows` | Jumlah baris |
-| 20 | 4 | `cell_count` | `cols * rows` |
+| 20 | 4 | `cell_count` | Jumlah sel terisi (sparse) |
 | 24 | 4 | `reserved` | 0 |
 | 28 | 12 | `reserved` | 0 |
 
-Diikuti `cell_count` entri 8 byte:
+Diikuti `cell_count` entri 12 byte, terurut menaik berdasarkan `key`:
 
 | Offset | Ukuran | Field |
 |---:|---:|---|
-| 0 | 4 | `posting_off` |
-| 4 | 4 | `posting_count` |
+| 0 | 4 | `key` |
+| 4 | 4 | `posting_off` |
+| 8 | 4 | `posting_count` |
 
-`posting_off` menunjuk ke section postings; `posting_count` adalah jumlah row
-index. Row di setiap sel terurut dan unik. Sel kosong memakai `count=0`.
+`key = row * cols + col`. Hanya sel terisi yang disimpan; sel kosong tidak
+punya entri. `posting_off` menunjuk ke section postings, `posting_count`
+adalah jumlah row index. Row di setiap sel terurut dan unik. Lookup memakai
+binary search pada `key`.
+
+Ukuran section adalah `40 + 12 * cell_count` byte. Dense grid
+`cols * rows` ditolak karena untuk Indonesia jumlah selnya jauh lebih besar
+daripada jumlah fitur. **Measured** pada index Indonesia penuh: 187.872 sel
+terisi dari 14.121.147 sel dense, sehingga section grid 2.254.504 byte.
+Dense 0,01 derajat pada bbox yang sama membutuhkan 169,5 MB hanya untuk tabel
+sel. Radius 1 km menyentuh p95 9 sel dan 2.969 kandidat; radius 10 km
+menyentuh p95 380 sel dan 89.443 kandidat sebelum cap kandidat server.
 
 Grid memakai koordinat `lat_e7` dan `lon_e7` untuk menghitung sel:
 

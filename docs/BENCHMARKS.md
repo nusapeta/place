@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft, belum ada hasil |
+| Status | Hasil v1 terukur, termasuk beban 10 menit dan arm64 |
 | Tanggal | 2026-11-13 |
 | Dokumen terkait | [SRS](SRS.md), [TRD](TRD.md) |
 
@@ -51,10 +51,16 @@ Prosedur:
 2. Start server, tunggu `/healthz` 200.
 3. Warm-up 2 menit dengan beban yang sama.
 4. Ukur 10 menit pada 20 RPS.
-5. Ulangi tiga kali, laporkan median dan rentang.
+5. Ulangi tiga kali, laporkan median dan rentang. Rilis v1 memakai satu run
+   10 menit penuh karena batas waktu; kekurangan pengulangan dicatat di
+   [NFR-REVIEW](research/NFR-REVIEW.md) dan tidak diubah menjadi klaim
+   stabilitas jangka panjang.
 
-Alat yang dipakai: `oha` atau `wrk2` untuk beban tetap, `hyperfine` untuk
-startup, dan `smaps_rollup` untuk RSS. Catat versi alat.
+Alat yang dipakai: `scripts/load_test.py` untuk beban tetap campuran,
+`scripts/measure_startup.py` untuk startup, `scripts/measure_build.py` untuk
+build, dan `/proc/<pid>/status` serta `smaps_rollup` untuk RSS. Alat Python
+standar dipakai karena `oha`, `wrk2`, dan `hyperfine` tidak tersedia di mesin
+uji dan tidak boleh diklaim sebagai alat yang dipakai.
 
 ### 3.2 Build
 
@@ -62,10 +68,10 @@ Ukur dari proses start sampai manifest selesai:
 
 ```text
 /usr/bin/time -v placeid-build \
-  --pbf indonesia-latest.osm.pbf \
-  --out places.idx \
+  --input indonesia-latest.osm.pbf \
+  --output places.idx \
   --manifest places.idx.json \
-  --workers 12
+  --verify
 ```
 
 Catat wall-clock, peak RSS, ukuran index, jumlah fitur, jumlah fitur dilewati,
@@ -91,7 +97,9 @@ sebagai biaya query.
 
 ## 4. Query set relevansi
 
-Buat 300 query berlabel manual dengan stratifikasi:
+Dataset 300 baris dengan stratifikasi di bawah. Label search adalah nama
+kanonik yang diterima dari index, bukan niat manusia independen; batas ini
+dicatat di [P4-EVIDENCE](research/P4-EVIDENCE.md).
 
 | Kategori | Jumlah | Contoh |
 |---|---:|---|
@@ -120,20 +128,39 @@ Metrik:
 
 Tabel diisi setelah benchmark pertama. Jangan mengisi dengan perkiraan.
 
+Angka di bawah diukur pada working tree final sebelum commit rilis; commit
+implementasi dicatat di tabel. Mesin: AMD Ryzen 5 5600G, 12 thread,
+14 GiB RAM, Linux 7.2.15-1-omarchy x64. Input PBF 1.741.650.872 B dengan
+SHA-256 `752489d3c4a1e2dd5116eba702b87c8a557dbefba50207e1183e8f6e1f35c774`.
+Rust 1.99.1, builder dan server 0.1.0, format index 1.
+
 | Metrik | Target | Hasil | Tanggal | Commit |
 |---|---:|---:|---|---|
-| Search p95 | ≤ 50 ms | belum diukur | | |
-| Reverse p95 | ≤ 30 ms | belum diukur | | |
-| Search p99 | belum ditetapkan | belum diukur | | |
-| Throughput stabil | 20 RPS | belum diukur | | |
-| Error rate | 0% untuk input valid | belum diukur | | |
-| Index Indonesia | ≤ 600 MB | belum diukur | | |
-| Idle RSS | ≤ 50 MB | belum diukur | | |
-| Startup | ≤ 1 detik | belum diukur | | |
-| Build Indonesia | ≤ 15 menit | belum diukur | | |
-| Top-1 relevance | ≥ 80% | belum diukur | | |
-| Top-5 relevance | ≥ 95% | belum diukur | | |
-| Determinisme index | 100% | belum diukur | | |
+| Overall p50 / p95 / p99 | belum ditetapkan | 18,974 / 47,553 / 57,558 ms | 2026-11-13 | `55fe1c6` |
+| Search p95 | ≤ 50 ms | 49,047 ms, 20 RPS, 600 detik | 2026-11-13 | `55fe1c6` |
+| Reverse p95 | ≤ 30 ms | 28,876 ms, 20 RPS, 600 detik | 2026-11-13 | `55fe1c6` |
+| Search p99 | belum ditetapkan | 58,224 ms, 20 RPS, 600 detik | 2026-11-13 | `55fe1c6` |
+| Reverse p99 | belum ditetapkan | 30,471 ms | 2026-11-13 | `55fe1c6` |
+| Lookup p95 / p99 | belum ditetapkan | 28,872 / 30,714 ms | 2026-11-13 | `55fe1c6` |
+| Throughput stabil | 20 RPS | 19,99 RPS, 0 error dari 11.996 request | 2026-11-13 | `55fe1c6` |
+| Error rate | 0% untuk input valid | 0,00% | 2026-11-13 | `55fe1c6` |
+| Index Indonesia | ≤ 600 MB | 141.997.032 B | 2026-11-13 | `55fe1c6` |
+| Idle RSS | ≤ 50 MB | 6.300 KiB (6,15 MiB) | 2026-11-13 | `55fe1c6` |
+| RSS beban 10 menit | belum ditetapkan | 150.180 KiB puncak | 2026-11-13 | `55fe1c6` |
+| CPU beban 10 menit | belum ditetapkan | 18,01% dari satu core | 2026-11-13 | `55fe1c6` |
+| Startup | ≤ 1 detik | 197,93 ms p50, 200,19 ms maksimum, fadvise DONTNEED | 2026-11-13 | `55fe1c6` |
+| Build Indonesia | ≤ 15 menit | 228,42 s, peak RSS 8.189.128 KiB | 2026-11-13 | `55fe1c6` |
+| Top-1 relevance | ≥ 80% | 96,14% (274/285) | 2026-11-13 | `55fe1c6` |
+| Top-5 relevance | ≥ 95% | 99,30% (283/285) | 2026-11-13 | `55fe1c6` |
+| Blind top-1 | ≥ 80% | 98,00% (98/100) | 2026-11-13 | `55fe1c6` |
+| Blind top-5 | ≥ 95% | 99,00% (99/100) | 2026-11-13 | `55fe1c6` |
+| Determinisme index | 100% | 2 build byte-identik, file `a732b4ec...` | 2026-11-13 | `55fe1c6` |
+| Image amd64 | berjalan | digest `49cb923f...`, 147 MB | 2026-11-13 | `55fe1c6` |
+| Image arm64 | berjalan | digest `134899f4...`, 36,7 MB, QEMU | 2026-11-13 | `55fe1c6` |
+
+Rincian dataset, per kategori, reverse, dan beban ada di
+[P4-EVIDENCE](research/P4-EVIDENCE.md). Status NFR ada di
+[NFR-REVIEW](research/NFR-REVIEW.md).
 
 ## 6. Analisis regresi
 

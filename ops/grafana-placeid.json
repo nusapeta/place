@@ -1,0 +1,16 @@
+{
+  "title": "placeid",
+  "uid": "placeid",
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "panels": [
+    {"type": "timeseries", "title": "Requests per second", "targets": [{"expr": "sum(rate(placeid_requests_total[1m])) by (endpoint)", "legendFormat": "{{endpoint}}"}]},
+    {"type": "timeseries", "title": "p95 latency", "targets": [{"expr": "histogram_quantile(0.95, sum(rate(placeid_request_duration_seconds_bucket[5m])) by (le, endpoint))", "legendFormat": "{{endpoint}}"}]},
+    {"type": "timeseries", "title": "Error ratio", "targets": [{"expr": "sum(rate(placeid_requests_total{status=~\"5..\"}[5m])) / clamp_min(sum(rate(placeid_requests_total[5m])), 1)", "legendFormat": "5xx"}]},
+    {"type": "stat", "title": "Working set", "targets": [{"expr": "container_memory_working_set_bytes{container=\"placeid\"}"}]},
+    {"type": "stat", "title": "Index bytes", "targets": [{"expr": "placeid_index_size_bytes"}]},
+    {"type": "stat", "title": "Indexed features", "targets": [{"expr": "placeid_index_features"}]},
+    {"type": "timeseries", "title": "Search candidates", "targets": [{"expr": "histogram_quantile(0.95, sum(rate(placeid_search_candidates_bucket[5m])) by (le))", "legendFormat": "p95"}]},
+    {"type": "stat", "title": "Index age", "targets": [{"expr": "placeid_index_age_seconds / 86400", "legendFormat": "days"}]}
+  ]
+}

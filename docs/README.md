@@ -1,8 +1,8 @@
 # Dokumentasi placeid
 
-Dokumen di direktori ini adalah sumber kontrak untuk pekerjaan `placeid`.
-Kode belum ada. Saat kode ditulis, requirement dan format di sini menjadi
-acuan review.
+Dokumen di direktori ini adalah sumber kontrak dan bukti untuk `placeid`.
+Implementasi v1 sudah ada di `src/`; requirement dan format di sini menjadi
+acuan review dan operasi.
 
 ## Urutan baca
 
@@ -19,23 +19,29 @@ acuan review.
 11. [research/LIGHTWEIGHT-METHODS](research/LIGHTWEIGHT-METHODS.md): riset
     metode ringan dan akurat.
 12. [GLOSSARY](GLOSSARY.md): istilah.
+13. [DEPENDENCIES](DEPENDENCIES.md): lisensi, audit, dan atribusi.
+14. [research/P3-EVIDENCE](research/P3-EVIDENCE.md): bukti kualitas index.
+15. [research/P4-EVIDENCE](research/P4-EVIDENCE.md): relevance, reverse, beban,
+    dan release drill.
+16. [research/NFR-REVIEW](research/NFR-REVIEW.md): status gate NFR.
+17. [releases/0.1.0](releases/0.1.0.md): catatan rilis v1.
 
 ## Status dokumen
 
 | Dokumen | Status | Pemilik topik |
 |---|---|---|
-| PRD | Draft | masalah, pengguna, scope, metrik produk |
-| SRS | Draft | requirement fungsional, NFR, acceptance criteria |
-| TRD | Draft | arsitektur, pipeline, ranking, risiko teknis |
-| ARCHITECTURE | Draft | diagram dan batas komponen |
-| API | Draft | endpoint, parameter, response, error |
-| INDEX-FORMAT | Draft | layout index, validasi, versioning |
-| BENCHMARKS | Draft | protokol dan hasil pengukuran |
-| OPERATIONS | Draft | prosedur runtime dan rebuild |
-| ROADMAP | Draft | fase dan exit criteria |
-| BACKLOG | Draft | task, ukuran, dependensi, acceptance |
-| research/LIGHTWEIGHT-METHODS | Draft riset | perbandingan metode, bukti, rekomendasi |
-| ADR | Draft | keputusan yang sudah diambil |
+| PRD | v1 | masalah, pengguna, scope, metrik produk |
+| SRS | v1 | requirement fungsional, NFR, acceptance criteria |
+| TRD | v1 | arsitektur, pipeline, ranking, risiko teknis |
+| ARCHITECTURE | v1 | diagram dan batas komponen |
+| API | v1 | endpoint, parameter, response, error |
+| INDEX-FORMAT | v1 | layout index, validasi, versioning |
+| BENCHMARKS | Hasil terukur | protokol dan hasil pengukuran |
+| OPERATIONS | v1 | prosedur runtime dan rebuild |
+| ROADMAP | v1 | fase dan exit criteria |
+| BACKLOG | Aktif | task, ukuran, dependensi, acceptance |
+| research/LIGHTWEIGHT-METHODS | Riset selesai | perbandingan metode, bukti, rekomendasi |
+| ADR | Accepted | keputusan yang sudah diambil |
 
 `Draft` berarti bisa berubah sebelum kode v1. Perubahan yang mengubah kontrak
 eksternal atau format file wajib disertai catatan di dokumen terkait dan, bila
@@ -76,7 +82,20 @@ menyalin.
 Keputusan yang mengubah bentuk repo, bahasa, format index, derivasi
 `place_id`, atau tingkat kompatibilitas API harus punya ADR di
 [decisions/](decisions/). Format ADR: konteks, keputusan, konsekuensi,
-alternatif yang ditolak.
+alternatif yang ditolak. Mulai ADR baru dari
+[decisions/TEMPLATE.md](decisions/TEMPLATE.md).
+
+Aturan review ADR:
+
+- Satu ADR untuk satu keputusan. Jangan menggabungkan keputusan format dengan
+  keputusan operasi.
+- Status `Accepted` hanya setelah ada data atau test yang mendukung.
+- Keputusan yang dibatalkan diberi status `Superseded` dan menunjuk ADR
+  pengganti.
+- Angka di bagian konteks harus berlabel target, perkiraan, atau hasil
+  pengukuran.
+- Perubahan format index wajib memperbarui [INDEX-FORMAT](INDEX-FORMAT.md) pada
+  commit yang sama.
 
 ADR yang sudah ada:
 
@@ -84,6 +103,9 @@ ADR yang sudah ada:
 - [0002: Index mmap khusus](decisions/0002-custom-mmap-index.md)
 - [0003: place_id 53-bit](decisions/0003-place-id.md)
 - [0004: Subset API Nominatim](decisions/0004-nominatim-subset.md)
+- [0005: Engine pencarian](decisions/0005-engine.md)
+- [0006: Fuzzy v1](decisions/0006-fuzzy.md)
+- [0007: Importance](decisions/0007-importance.md)
 
 ## Konvensi penulisan
 

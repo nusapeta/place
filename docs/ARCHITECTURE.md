@@ -70,7 +70,7 @@ sequenceDiagram
     participant PBF as OSM PBF
     participant Tmp as places.idx.tmp
     participant Out as places.idx
-    Op->>B: --pbf, --out, --manifest
+    Op->>B: --input, --output, --manifest
     B->>PBF: Pass 1: fitur node/way/relation, refs, admin members
     B->>PBF: Pass 2: koordinat node yang dirujuk
     B->>PBF: Pass 3: geometri way untuk relation/admin

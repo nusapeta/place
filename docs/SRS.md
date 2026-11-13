@@ -346,8 +346,8 @@ Acceptance:
 | File index | [INDEX-FORMAT.md](INDEX-FORMAT.md) |
 | Manifest | JSON, field di FR-013 |
 | Input PBF | `*.osm.pbf` dari Geofabrik atau ekstraksi Indonesia |
-| CLI builder | `placeid-build --pbf <path> --out <path> --manifest <path>` |
-| CLI server | `placeid-serve --index <path> --addr <host:port>` |
+| CLI builder | `placeid-build --input <path> --output <path> --manifest <path>` |
+| CLI server | `placeid-serve --index <path> --bind <host:port>` |
 | Environment | `PLACEID_INDEX`, `PLACEID_ADDR`, `PLACEID_LOG`, `PLACEID_MAX_CONCURRENCY` |
 | Metrik | Format teks Prometheus |
 

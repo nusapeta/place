@@ -1,0 +1,101 @@
+# query	accepted	split	category
+kota kupang	kota kupang|kupang	holdout	region	2251801085549419|2251800075999393
+kota bangun ulu	kota bangun ulu|bangun ulu	holdout	region	2251801122309058
+kota bunga	kota bunga|bunga	holdout	region	4503601079704316|2251801085504901
+kota pelalawan	kota pelalawan|pelalawan	holdout	region	4503600678080836|6755399448889209
+kota maju upt wiwirano	kota maju upt wiwirano|maju upt wiwirano	holdout	region	2251801085501263
+kota baru reteh	kota baru reteh|baru reteh	holdout	region	2251801122029247
+kabupaten langkat	kabupaten langkat|langkat	holdout	region	6755399449539096|2251812050958004
+kota citra grha	kota citra grha|citra grha	holdout	region	4503601059465950
+kota bangun	kota bangun|bangun	holdout	region	6755399461034755|6755399453657803
+kota tanah	kota tanah|tanah	holdout	region	2251801122154099
+kota bahagia	kota bahagia|bahagia	holdout	region	6755399449988041|2251801122404192
+kota mas v	kota mas v|mas v	holdout	region	4503600539654666
+kota utara	kota utara|utara	holdout	region	2251813751358619
+kota gajah	kota gajah|gajah	holdout	region	2251801122074102|2251810765387988
+kota dalam	kota dalam|dalam	holdout	region	2251801122158586|2251801122050466
+kota garo	kota garo|garo	holdout	region	2251811986453876
+kota manna	kota manna|manna	holdout	region	2251811070984695|2251802931794494
+kota intan	kota intan|intan	holdout	region	2251811988174136|2251807666148906
+kota tengah	kota tengah|tengah	holdout	region	2251812042997248|6755399446857927
+kota bali residence	kota bali residence|bali residence	holdout	region	4503600914241494
+kota karawang	kota karawang|karawang	holdout	region	4503601095513945|2251803781007708
+kota praja	kota praja|praja	holdout	region	2251812617478132
+kota pari v	kota pari v|pari v	holdout	region	2251808563711062
+kota bumi	kota bumi|bumi	holdout	region	2251801122157055|2251801122372207
+kota gunungsitoli nias	kota gunungsitoli nias|gunungsitoli nias	holdout	region	4503600239368671
+jalan abdurahman	jalan abdurahman	holdout	road	4503599757999912
+jalan dempel mutiara i	jalan dempel mutiara i	holdout	road	4503600216499269
+jalan drain kampung sawah	jalan drain kampung sawah	holdout	road	4503599786206647
+jalan patria sari i	jalan patria sari i	holdout	road	4503599816275607
+jalan puspanjolo barat xii	jalan puspanjolo barat xii	holdout	road	4503599809692090
+jalan ampel gading raya	jalan ampel gading raya	holdout	road	4503599867610420
+jalan kyai haji abdullah bin nuh	jalan kyai haji abdullah bin nuh	holdout	road	4503599815552729
+jalan nusa indah kowang	jalan nusa indah kowang	holdout	road	4503600211241023
+jalan mutiara iii	jalan mutiara iii	holdout	road	4503599757730580
+jalan kincir	jalan kincir	holdout	road	4503599744588126
+jalan bojong molek raya	jalan bojong molek raya	holdout	road	4503600199608653
+jalan pucung 1 munggang	jalan pucung 1 munggang	holdout	road	-
+jalan kompleks btn palupi	jalan kompleks btn palupi	holdout	road	4503599765345896
+jalan pak ilman 2	jalan pak ilman 2	holdout	road	4503600296990224
+jalan cempedak ii	jalan cempedak ii	holdout	road	4503599785786683
+jalan soban 1	jalan soban 1	holdout	road	4503600405843936
+jalan kayu putih tengah ii a	jalan kayu putih tengah ii a	holdout	road	4503600124962625
+jalan cucimanah	jalan cucimanah	holdout	road	4503599812133173
+jalan meninting 12	jalan meninting 12	holdout	road	4503599890558107
+jalan margo mulyo 2	jalan margo mulyo 2	holdout	road	4503600023872049
+jalan ubi iii	jalan ubi iii	holdout	road	4503599787222733
+jalan sungai belawan	jalan sungai belawan	holdout	road	4503600859937818
+jalan kyai haji ramli	jalan kyai haji ramli	holdout	road	4503599656451386
+jalan garden hills estate	jalan garden hills estate	holdout	road	4503599953471993
+jalan kebon mede	jalan kebon mede	holdout	road	4503599968029953
+jalan prof hamka	jalan prof hamka	holdout	road	4503599780406481
+jalan riung saluyu c xii	jalan riung saluyu c xii	holdout	road	4503600311718994
+jalan ahmad yani v	jalan ahmad yani v	holdout	road	4503600849010085
+jalan menoreh barat iv	jalan menoreh barat iv	holdout	road	4503599967986993
+jalan sababilah dalam	jalan sababilah dalam	holdout	road	4503600266703204
+jalan terusan sigura gura blok a	jalan terusan sigura gura blok a	holdout	road	4503599782350168
+jalan dupak bangunrejo vi	jalan dupak bangunrejo vi	holdout	road	4503599783859226
+jalan sumatera noss jombang	jalan sumatera noss jombang	holdout	road	4503600065792596
+jalan raya cepu blora	jalan raya cepu blora	holdout	road	4503599949322337
+jalan perumahan taman ratu indah	jalan perumahan taman ratu indah	holdout	road	4503599657496867
+janti	janti	holdout	poi	2251810852109474
+loning	loning	holdout	poi	6755399458813752
+tanjunggenteng	tanjunggenteng	holdout	poi	2251813165192161
+pungkie	pungkie	holdout	poi	2251813166242129
+dianella	dianella	holdout	poi	2251813952583617
+biak muli	biak muli	holdout	poi	2251800081239472
+ringin	ringin	holdout	poi	2251801122048343
+cikawungading	cikawungading	holdout	poi	6755399459261116
+meukodayah	meukodayah	holdout	poi	2251813166148590
+pulau baeda	pulau baeda	holdout	poi	4503599892392388
+giwan	giwan	holdout	poi	2251801122331537
+sobontoro	sobontoro	holdout	poi	6755399460822380
+limpana	limpana	holdout	poi	2251811436238497
+watulambot	watulambot	holdout	poi	2251801122346243
+dlinseng	dlinseng	holdout	poi	2251813046862569
+jejangkit pasar	jejangkit pasar	holdout	poi	2251801122316579
+bangsal	bangsal	holdout	poi	6755399453627463
+pulau wayel si	pulau wayel si	holdout	poi	4503599654361850
+batang sangir	batang sangir	holdout	poi	2251801122038324
+sahraen	sahraen	holdout	poi	2251801085536990
+mopugad selatan	mopugad selatan	holdout	poi	2251803053781558
+ladahai	ladahai	holdout	poi	2251801085500805
+gesang	gesang	holdout	poi	2251811075802932
+banjar tegal	banjar tegal	holdout	poi	6755399461503579
+cimande	cimande	holdout	poi	6755399461013682
+pulau bukit dua	pulau bukit dua	holdout	poi	4503599685795182
+keudekeumuneng	keudekeumuneng	holdout	poi	2251813165258574
+karang	karang	holdout	poi	6755399460332442
+parbuluan iv	parbuluan iv	holdout	poi	2251801122063180
+pulau tengah	pulau tengah	holdout	poi	4503600996063016
+karangan	karangan	holdout	poi	2251801122343699
+tegalmelik	tegalmelik	holdout	poi	2251810683864491
+jeruk purut	jeruk purut	holdout	poi	2251801122322836
+banualuhu	banualuhu	holdout	poi	2251801121986355
+mallasoro	mallasoro	holdout	poi	2251801085512725
+gunung tumpeng	gunung tumpeng	holdout	poi	2251801122409755
+gunung sari	gunung sari	holdout	poi	2251800234497260
+pinang tinggi	pinang tinggi	holdout	poi	2251807055175565
+pamah salak	pamah salak	holdout	poi	2251801121986349
+bendoan	bendoan	holdout	poi	2251811190912290

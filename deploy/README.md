@@ -62,6 +62,18 @@ docker inspect placeid --format '{{.State.Health.Status}}'   # healthy
 dengan `index.sha256` di manifest; `--verify-checksum` membuat start gagal
 kalau file tidak cocok.
 
+Dari luar, lewat bundle gateway:
+
+```bash
+for p in /place/healthz '/place/search?q=monas&limit=2' \
+         '/place/reverse?lat=-6.175392&lon=106.827153' \
+         '/place/lookup?osm_ids=N1308678148'; do
+  printf '%-46s ' "$p"
+  curl -s -o /dev/null -w '%{http_code}\n' "https://route.arifsani.xyz$p"   # 200
+done
+curl -s -o /dev/null -w '%{http_code}\n' https://route.arifsani.xyz/place/metrics   # 404
+```
+
 ## 4. Akses publik
 
 Semua jalur publik melewati Cloudflare, karena ingress 80/443 dari internet
@@ -70,38 +82,59 @@ probe eksternal ke `82.158.129.136:80`/`:443` berakhir `Connection timed out`
 (pola yang sama dengan `home.arifsani.xyz`, yang DNS-only dan juga tidak
 terjangkau). Jadi jangan pilih mode DNS-only untuk `place`.
 
-Vhost openresty siap pakai ada di
-[`openresty/place.arifsani.xyz.conf`](openresty/place.arifsani.xyz.conf). Salin
-ke `/opt/1panel/apps/openresty/openresty/conf/conf.d/` (milik `root`; tanpa sudo
-gunakan `docker cp` ke container `1Panel-openresty-icEC`), lalu
-`nginx -t && nginx -s reload`. Vhost itu memisahkan listener 80 dan 443:
-redirect 301 hanya untuk klien langsung, sedangkan origin Cloudflare pada zona
-mode Flexible tetap dilayani. Vhost inilah yang menutup `/metrics`.
+### 4.1 Bundle lewat gateway routeid (jalur yang dipakai)
 
-### 4.1 Route tunnel ke openresty (satu-satunya jalur yang bekerja)
+Ingress tunnel mencocokkan **hostname asli**, dan `place.arifsani.xyz` tidak
+punya rule di sana. Yang punya rule adalah `route.arifsani.xyz` menuju
+`gateway:8080`, jadi geocoder dipasang sebagai prefix di gateway itu:
 
-Tunnel `af067798-9776-40b1-b4f3-1245741c710d` menyimpan ingress di dashboard,
-bukan di file: `cloudflared-tunnel` berjalan dengan `--token` saja. Origin harus
-`http://192.168.1.219:80`, **bukan** `http://placeid:8090`, supaya `/metrics`
-tetap tertutup oleh vhost.
-
-Di dashboard Cloudflare: **Networking > Tunnels > af067798-... > Routes > Add
-route > Published application**, hostname `place.arifsani.xyz`, service URL
-`http://192.168.1.219:80`.
-
-Sisi origin sudah diverifikasi dari container di `1panel-network`:
+| Path publik | Diteruskan ke |
+|---|---|
+| `https://route.arifsani.xyz/route` | `routeid` / `routeid-motor` |
+| `https://route.arifsani.xyz/place/*` | `http://placeid:8090` |
 
 ```bash
-docker run --rm --network 1panel-network --dns 8.8.8.8 alpine:3.22 \
-  wget -S -qO- --header='Host: place.arifsani.xyz' \
-    --header='X-Forwarded-Proto: https' http://192.168.1.219/healthz
+curl -s 'https://route.arifsani.xyz/place/healthz'
+curl -s 'https://route.arifsani.xyz/place/search?q=monas&limit=2'
+curl -s 'https://route.arifsani.xyz/place/reverse?lat=-6.175392&lon=106.827153'
+curl -s 'https://route.arifsani.xyz/place/lookup?osm_ids=N1308678148'
 ```
 
-Tidak ada perubahan compose untuk langkah ini. Token API yang tersedia saat
-deploy hanya punya `DNS: Edit` pada zona `arifsani.xyz`; seluruh endpoint
+Tidak ada perubahan di repo ini untuk jalur tersebut: cukup container
+`placeid` hidup di `1panel-network` dengan alias `placeid`. Sisi gateway
+(flag `-place`, kuota, penutupan `/place/metrics`) didokumentasikan di
+`deploy/README.md` repo routeid.
+
+Batas yang berlaku pada prefix itu:
+
+| Aturan | Nilai |
+|---|---|
+| Kuota per IP | 240/menit, burst 40, dijawab `429` + `Retry-After` |
+| `/place/metrics` | `404` (`-block-metrics` di gateway) |
+| `/place` saja | `404`, upstream tidak punya halaman index |
+| `placeid` mati | `/place/*` menjawab `502`; `/healthz` gateway tetap `200` |
+| Path yang dilihat upstream | prefix dibuang, jadi `/place/search` menjadi `/search` |
+
+### 4.2 Hostname khusus (belum aktif)
+
+`place.arifsani.xyz` sudah punya CNAME proxied ke tunnel
+`af067798-9776-40b1-b4f3-1245741c710d`, tetapi tunnel itu tidak punya rule
+untuk hostname tersebut, jadi jawabannya `404`. Untuk mengaktifkannya:
+
+1. Salin vhost [`openresty/place.arifsani.xyz.conf`](openresty/place.arifsani.xyz.conf)
+   ke `/opt/1panel/apps/openresty/openresty/conf/conf.d/` (milik `root`; tanpa
+   sudo gunakan `docker cp` ke container 1Panel openresty), lalu
+   `nginx -t && nginx -s reload`. Vhost itu menutup `/metrics` dengan `404` dan
+   memberi `limit_req` 20 r/s per IP.
+2. Di dashboard Cloudflare: **Networking > Tunnels > af067798-... > Routes >
+   Add route > Published application**, hostname `place.arifsani.xyz`, service
+   URL `http://192.168.1.219:80`. Origin harus IP host (openresty), bukan
+   `placeid:8090`, supaya `/metrics` tetap tertutup vhost, bukan oleh aplikasi.
+
+Langkah 2 butuh dashboard atau token dengan `Cloudflare Tunnel: Edit`. Token
+yang tersedia saat deploy hanya punya `DNS: Edit`, dan seluruh endpoint
 konfigurasi tunnel menolak (`GET`/`PUT .../cfd_tunnel/{tid}/configurations` →
-`401` kode `1001`, `POST /cfd_tunnel` → `403` kode `10000`), jadi route harus
-ditambahkan lewat dashboard atau lewat token dengan `Cloudflare Tunnel: Edit`.
+`401` kode `1001`, `POST /cfd_tunnel` → `403` kode `10000`).
 
 Jalur lain yang **sudah dicoba dan tidak bekerja**, jangan diulang:
 
@@ -112,26 +145,18 @@ Jalur lain yang **sudah dicoba dan tidak bekerja**, jangan diulang:
 | Quick tunnel dengan `--http-host-header place.arifsani.xyz` | hanya berlaku pada hostname acak `*.trycloudflare.com` itu sendiri |
 | Port forward manual di router | tidak ada UPnP/NAT-PMP; inbound juga tidak dirutekan ISP |
 
-### 4.2 Alternatif tanpa dashboard
-
-Kalau route tunnel tidak bisa ditambahkan, jalur lain tetap butuh perubahan di
-luar repo: vhost 1Panel yang meneruskan ke `http://127.0.0.1:18092` plus
-sertifikat Let's Encrypt, dan penerbitan sertifikat itu tetap butuh akun DNS
-atau route tunnel. Konfigurasi 1Panel ada di
-`/opt/1panel/apps/openresty/openresty/conf/conf.d` milik `root`.
-
 ### 4.3 Jangan menerbitkan `/metrics`
 
-`/metrics` selalu terbit dan memuat ukuran, umur, dan jumlah fitur index.
-Kalau service diarahkan ke domain publik, tutup path itu di edge:
+`/metrics` selalu terbit dan memuat ukuran, umur, dan jumlah fitur index. Dua
+jalur publik di atas menutupnya dengan cara berbeda, dan keduanya sudah diuji:
 
-```text
-# Cloudflare WAF custom rule
-http.request.uri.path eq "/metrics" -> Block
-```
+| Jalur | Yang menutup |
+|---|---|
+| Bundle gateway routeid | flag `-block-metrics` di gateway (`/place/metrics` → `404`) |
+| Hostname khusus lewat openresty | vhost `place.arifsani.xyz.conf` (`location = /metrics` → `404`) |
 
-Alternatif tanpa aturan WAF: arahkan domain ke proxy tipis yang hanya
-meneruskan `/search`, `/reverse`, `/lookup`, `/healthz`, dan `/version`.
+Kalau nanti ditambah jalur ketiga, tutup juga di situ; jangan mengandalkan
+aplikasi, karena server memang tidak pernah menyembunyikan endpoint itu.
 Monitoring tetap membaca `http://127.0.0.1:18092/metrics` langsung.
 
 ## 5. Update index

@@ -132,8 +132,32 @@ Index dibangun di mesin lain (puncak RSS 8,2 GB) lalu dikirim sebagai artefak;
 image dipindahkan dengan `docker save | ssh ... docker load`. Jangan pernah
 membangun index di host dengan 7,8 GB RAM.
 
-Jika service dipublikasikan lewat domain, `/metrics` wajib ditutup di edge
-karena endpoint itu selalu aktif dan memuat ukuran serta umur index.
+Akses publik memakai bundle gateway `routeid`, karena ingress tunnel
+mencocokkan hostname asli dan hanya `route.arifsani.xyz` yang punya rule:
+
+| Path publik | Diteruskan ke |
+|---|---|
+| `https://route.arifsani.xyz/place/*` | `http://placeid:8090` |
+| `https://route.arifsani.xyz/route` | `routeid` / `routeid-motor` |
+
+Gateway itu membuang prefix sebelum meneruskan, jadi kontrak `/search`,
+`/reverse`, `/lookup`, dan `/healthz` tidak berubah. Healthcheck gateway tetap
+hanya `/healthz` milik routing: `placeid` yang mati membuat `/place/*`
+menjawab `502` tanpa membuat gateway dianggap gagal.
+
+Dua hal yang tidak boleh dilepas:
+
+- `/metrics` wajib ditutup di jalur publik, karena endpoint itu selalu aktif
+  dan memuat ukuran serta umur index. Bundle menutupnya dengan
+  `-block-metrics` di gateway; vhost openresty menutupnya sendiri.
+- Kuota per IP untuk `/place` (240/menit, burst 40) menjaga agar satu klien
+  tidak menghabiskan CPU host: pencarian memindai seluruh index dan plafon
+  terukurnya sekitar 20 RPS.
+
+Hostname khusus `place.arifsani.xyz` belum aktif: CNAME-nya sudah ada, tetapi
+tunnel belum punya rule untuk hostname itu sehingga jawabannya `404`. Prosedur
+dan jalur yang sudah terbukti gagal ada di
+[`deploy/README.md`](../deploy/README.md) §4.2.
 
 ### 3.2 systemd
 

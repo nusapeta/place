@@ -105,6 +105,13 @@ Tidak ada perubahan di repo ini untuk jalur tersebut: cukup container
 (flag `-place`, kuota, penutupan `/place/metrics`) didokumentasikan di
 `deploy/README.md` repo routeid.
 
+Peta demo di `https://route.arifsani.xyz/` memakai `/place/search` untuk
+mengisi titik A dan B: mengetik nama tempat menampilkan enam hasil di sekitar
+tengah peta, lalu tombol A atau B mengisi titik itu tanpa klik peta. Hasilnya
+tetap koordinat di URL, jadi tautan yang dibagikan hanya berisi `from`/`to`.
+Kalau bundle dimatikan, kolom pencarian di peta ikut nonaktif dan peta kembali
+hanya menerima klik.
+
 Batas yang berlaku pada prefix itu:
 
 | Aturan | Nilai |

@@ -59,6 +59,11 @@ jobs:
         run: cargo deny check licenses
 
   arm64:
+    # A full Rust release build under QEMU takes ~50 minutes; running it on
+    # every pull request queues the runner for an hour and slows every review.
+    # It runs on main after merge, which still catches arm64 breakage before a
+    # tag (the release workflow also builds linux/arm64).
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -74,5 +79,8 @@ jobs:
           push: false
           load: true
           tags: nusapeta-place:arm64
+          cache-from: type=gha,scope=arm64
+          cache-to: type=gha,mode=max,scope=arm64
+
       - name: Smoke arm64
         run: docker run --rm --platform linux/arm64 nusapeta-place:arm64 --help

@@ -4,6 +4,8 @@ A self-hosted OpenStreetMap geocoder for Indonesia. One Rust crate, two
 binaries (batch builder and HTTP server), one memory-mapped index, no database
 service.
 
+[![CI](https://github.com/nusapeta/place/actions/workflows/ci.yml/badge.svg)](https://github.com/nusapeta/place/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/nusapeta/place?sort=semver&label=release)](https://github.com/nusapeta/place/releases/latest)
 [![Rust](https://img.shields.io/badge/Rust-1.99-000000?logo=rust)](rust-toolchain.toml)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Data](https://img.shields.io/badge/data-ODbL-green)](https://www.openstreetmap.org/copyright)

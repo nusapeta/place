@@ -6,6 +6,13 @@ Geocoder mandiri untuk Indonesia dari OpenStreetMap. Target bentuknya satu
 crate Rust dengan dua binary, builder batch dan server HTTP, satu file index
 `mmap`, dan tanpa service database.
 
+[![CI](https://github.com/nusapeta/place/actions/workflows/ci.yml/badge.svg)](https://github.com/nusapeta/place/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/nusapeta/place?sort=semver&label=release)](https://github.com/nusapeta/place/releases/latest)
+[![Rust](https://img.shields.io/badge/Rust-1.99-000000?logo=rust)](rust-toolchain.toml)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Data](https://img.shields.io/badge/data-ODbL-green)](https://www.openstreetmap.org/copyright)
+[![Status](https://img.shields.io/badge/status-research%20preview-orange)](#batasan)
+
 > **English:** Nusapeta Place is a self-hosted OpenStreetMap geocoder for Indonesia.
 > It resolves place names, performs nearest-feature reverse geocoding, and
 > exposes stable place identifiers. The design target is a small operational

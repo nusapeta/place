@@ -8,6 +8,12 @@ on:
 permissions:
   contents: read
 
+# Superseded pushes stop the previous run. The arm64 job alone is ~50 minutes
+# under QEMU, so a queue of stale runs would hide the real duration.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   docs:
     runs-on: ubuntu-24.04

@@ -206,5 +206,5 @@ The document index and change rules are in [`docs/README.md`](docs/README.md).
 ## License
 
 Code: MIT, see [LICENSE](LICENSE). OpenStreetMap data: ODbL 1.0, see
-[`LICENSE-DATA`](LICENSE-DATA). API responses and documentation must carry
+[`LICENSE-DATA`](LICENSE-DATA). API responses and documentation MUST carry
 attribution to OpenStreetMap contributors.

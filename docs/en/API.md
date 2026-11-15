@@ -16,7 +16,7 @@ Indonesian file is canonical.
 This API is a subset of Nominatim `jsonv2`, not a full implementation. Clients
 using common fields such as `place_id`, `osm_type`, `osm_id`, `lat`, `lon`,
 `display_name`, `address`, and `boundingbox` can migrate with small changes.
-Unsupported parameters must be visible, not silently ignored.
+Unsupported parameters MUST be visible, not silently ignored.
 
 Every successful response uses `Content-Type: application/json; charset=utf-8`.
 Coordinates are decimal strings. `place_id` and `osm_id` are numbers.
@@ -168,7 +168,7 @@ GET /reverse?lat=-7.7956&lon=110.3695&radius=500&addressdetails=1
 | `place_ids` | One of | At most 50 IDs | Extension, numeric list |
 | `addressdetails` | No | `0`, `1` | Same as search |
 
-Only one of `osm_ids` or `place_ids` may be sent. If both are sent, the server
+Only one of `osm_ids` or `place_ids` MAY be sent. If both are sent, the server
 returns 400.
 
 ### 6.2 Behavior
@@ -290,8 +290,8 @@ seconds.
 | `/status` | Absent; use `/healthz` and `/version` |
 | `/deletable` | Absent |
 
-Response fields absent from `nusapeta-place` must not be assumed empty. Clients
-must check the fields they use.
+Response fields absent from `nusapeta-place` MUST NOT be assumed empty. Clients
+MUST check the fields they use.
 
 ## 10. Attribution and license
 
@@ -301,7 +301,7 @@ Every result contains:
 licence: "ODbL 1.0, © OpenStreetMap contributors"
 ```
 
-Attribution must also be visible in documentation and in any UI that displays
+Attribution MUST also be visible in documentation and in any UI that displays
 results. OSM data is ODbL 1.0. `nusapeta-place` code is MIT.
 
 ## 11. Limits and versioning

@@ -1,60 +1,62 @@
-# Keamanan
+# Security
 
-## Melaporkan masalah
+## Reporting a problem
 
-Jangan membuka issue publik untuk kerentanan yang bisa dieksploitasi. Gunakan
-GitHub private security advisory di
-<https://github.com/nusapeta/place/security/advisories/new>. Sertakan:
+Do not open a public issue for an exploitable vulnerability. Use the GitHub
+private security advisory at
+<https://github.com/nusapeta/place/security/advisories/new>. Include:
 
-- Versi commit.
-- Langkah reproduksi.
-- Dampak yang mungkin.
-- Apakah masalah bisa dipicu lewat HTTP atau hanya lewat index yang rusak.
+- the commit version;
+- reproduction steps;
+- possible impact;
+- whether the problem is reachable over HTTP or only through a corrupt index.
 
-Akan ada konfirmasi penerimaan dalam 7 hari, lalu perbaikan dan catatan rilis
-setelah masalah tertangani. Tidak ada janji tanggal perbaikan atau SLA.
+An acknowledgement follows within 7 days, then a fix and release note once the
+problem is handled. There is no fix-date promise or SLA.
 
-## Model ancaman
+## Threat model
 
-| Aset | Ancaman | Mitigasi |
+| Asset | Threat | Mitigation |
 |---|---|---|
-| Proses server | Input HTTP berbahaya | Validasi panjang, rentang, dan tipe |
-| Index | File rusak atau dimodifikasi | Magic, versi, batas section, checksum |
-| Parser | Offset di luar batas | Validasi ketat, `unsafe` terbatas, fuzz |
-| Dependency | Crate berbahaya atau rentan | `cargo audit`, review dependency |
-| Container | Akses tulis atau root | Read-only, non-root, tanpa shell |
-| Data | Penyalahgunaan data OSM | Atribusi ODbL, tidak menyimpan query |
+| Server process | Hostile HTTP input | Length, range, and type validation |
+| Index | Corrupt or modified file | Magic, version, section bounds, checksum |
+| Parser | Out-of-bounds offset | Strict validation, limited `unsafe`, fuzzing |
+| Dependencies | Hostile or vulnerable crate | `cargo audit`, dependency review |
+| Container | Write access or root | Read-only, non-root, no shell |
+| Data | OSM data misuse | ODbL attribution, no query storage |
 
-## Batas
+## Boundaries
 
-`nusapeta-place` tidak menangani autentikasi, TLS, atau rate limit. Itu tanggung
-jawab gateway. Jangan mengekspos port `nusapeta-place` langsung ke internet.
+`nusapeta-place` does not handle authentication, TLS, or rate limiting. The
+gateway owns those. Do not expose the `nusapeta-place` port directly to the
+internet.
 
-## Yang dianggap kerentanan
+## What counts as a vulnerability
 
-- Remote crash atau panic dari request HTTP valid.
-- Out-of-bounds read dari index yang dibuka dengan flag verifikasi.
-- Eksekusi kode dari input PBF atau index.
-- Kebocoran path filesystem atau stack trace di respons.
-- Denial of service yang tidak bisa dibatasi dengan limit request.
+- A remote crash or panic from a valid HTTP request.
+- An out-of-bounds read from an index opened with checksum verification.
+- Code execution from PBF or index input.
+- Filesystem path or stack trace leakage in a response.
+- Denial of service that request limits cannot bound.
 
-## Yang bukan kerentanan
+## What does not count
 
-- Hasil pencarian yang salah karena data OSM tidak lengkap.
-- Latency di luar target pada hardware yang tidak memenuhi spesifikasi.
-- Klien yang mengirim `format` tidak didukung dan mendapat 400.
-- `place_id` berbeda dari Nominatim. Itu perbedaan desain yang terdokumentasi.
+- Wrong search results caused by incomplete OSM data.
+- Latency outside target on hardware that does not meet the specification.
+- A client sending an unsupported `format` and receiving 400.
+- A `place_id` different from Nominatim. That is a documented design
+  difference.
 
-## Dependency
+## Dependencies
 
-- Pin versi di `Cargo.lock`.
-- Jalankan `cargo audit` sebelum rilis.
-- Hindari crate yang tidak dirawat atau punya `unsafe` besar tanpa alasan.
-- Catat dependency baru di pull request.
+- Pin versions in `Cargo.lock`.
+- Run `cargo audit` before release.
+- Avoid unmaintained crates or large `unsafe` surfaces without a reason.
+- Record new dependencies in the pull request.
 
-## Data dan privasi
+## Data and privacy
 
-- Layanan tidak menyimpan query, koordinat, atau hasil.
-- Log default tidak memuat teks query atau koordinat.
-- Metrik tidak memakai query sebagai label.
-- PBF dan index tidak boleh masuk git.
+- The service does not store queries, coordinates, or results.
+- Default logs do not contain query text or coordinates.
+- Metrics do not use queries as labels.
+- PBFs and indexes never enter git.

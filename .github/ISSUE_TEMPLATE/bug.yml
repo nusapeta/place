@@ -1,45 +1,45 @@
-name: Laporan bug
-description: Perilaku yang salah, crash, atau respons HTTP tak terduga
+name: Bug report
+description: Wrong behavior, a crash, or an unexpected HTTP response
 title: "bug: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Jangan laporkan kerentanan di sini. Baca `SECURITY.md`.
-        Untuk nama tempat yang hilang atau hasil reverse yang meleset, pakai
-        formulir "Laporan data atau hasil pencarian".
+        Do not report vulnerabilities here. Read `SECURITY.md`.
+        For a missing place name or a wrong reverse result, use the
+        "Data or search report" form.
   - type: textarea
     id: what
     attributes:
-      label: Apa yang terjadi
-      description: Respons aktual, kode status, dan pesan error.
+      label: What happened
+      description: Actual response, status code, and error message.
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
-      label: Apa yang diharapkan
+      label: What you expected
     validations:
       required: true
   - type: input
     id: request
     attributes:
       label: Request
-      description: URL lengkap atau perintah curl.
+      description: Full URL or curl command.
       placeholder: curl -s 'http://127.0.0.1:8090/search?q=monas&limit=3'
     validations:
       required: true
   - type: textarea
     id: index
     attributes:
-      label: Index dan versi
-      description: Keluaran `/healthz` (manifest_sha256, jumlah fitur) dan `/version`.
+      label: Index and version
+      description: "`/healthz` output (manifest_sha256, feature count) and `/version`."
     validations:
       required: true
   - type: textarea
     id: logs
     attributes:
-      label: Log
-      description: Baris log terkait, tanpa data pribadi.
+      label: Logs
+      description: Related log lines, without personal data.
       render: text

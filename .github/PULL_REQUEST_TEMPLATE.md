@@ -1,32 +1,32 @@
-# Ringkasan
+# Summary
 
-Perubahan apa ini?
+What does this change?
 
-## Jenis
+## Type
 
-- [ ] Perbaikan bug
-- [ ] Fitur
-- [ ] Dokumentasi
-- [ ] Data atau index
-- [ ] CI atau build
+- [ ] Bug fix
+- [ ] Feature
+- [ ] Documentation
+- [ ] Data or index
+- [ ] CI or build
 
-## Bukti
+## Evidence
 
-Untuk perubahan kualitas pencarian atau reverse, isi query/koordinat, hash
-index, dan hasil sebelum/sesudah.
+For search or reverse quality changes, include the query/coordinate, index
+hash, and before/after output.
 
 ```text
 query= index_sha256=
 before= after=
 ```
 
-Untuk klaim performa, sertakan mesin, commit, dan perintah reproduksi.
+For performance claims, include machine, commit, and reproduction command.
 
 ## Checklist
 
-- [ ] `cargo fmt`, `cargo clippy`, `cargo test` lulus.
-- [ ] `cargo audit` dan `cargo deny check licenses` lulus.
-- [ ] Test regresi ada untuk bug perilaku.
-- [ ] Dokumentasi kontrak diperbarui bila perlu.
-- [ ] Tidak ada PBF, index, atau file data besar.
-- [ ] Commit memakai `Signed-off-by` (DCO).
+- [ ] `cargo fmt`, `cargo clippy`, `cargo test` pass.
+- [ ] `cargo audit` and `cargo deny check licenses` pass.
+- [ ] A regression test exists for the behavior bug.
+- [ ] Contract documentation is updated when needed.
+- [ ] No PBF, index, or large data file is included.
+- [ ] Commits carry `Signed-off-by` (DCO).

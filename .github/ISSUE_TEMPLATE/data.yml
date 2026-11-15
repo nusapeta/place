@@ -1,20 +1,19 @@
-name: Laporan data atau hasil pencarian
-description: Nama tempat hilang, peringkat salah, atau reverse meleset
+name: Data or search report
+description: Missing place name, wrong ranking, or wrong reverse result
 title: "data: "
 labels: ["data"]
 body:
   - type: markdown
     attributes:
       value: |
-        Kebanyakan kesalahan berasal dari data OpenStreetMap. Perbaikan
-        permanen biasanya dilakukan di OSM, lalu index bulanan berikutnya ikut
-        memperbaikinya.
+        Most errors come from OpenStreetMap data. The permanent fix usually
+        goes into OSM, and the next monthly index picks it up.
   - type: textarea
     id: query
     attributes:
-      label: Query atau koordinat
-      description: Persis seperti yang dikirim, termasuk `limit` dan bahasa.
-      placeholder: "q=monas&limit=3 atau lat=-6.175392&lon=106.827153"
+      label: Query or coordinates
+      description: Exactly as sent, including `limit` and language.
+      placeholder: "q=monas&limit=3 or lat=-6.175392&lon=106.827153"
     validations:
       required: true
   - type: dropdown
@@ -30,26 +29,26 @@ body:
   - type: textarea
     id: result
     attributes:
-      label: Hasil sekarang
-      description: Ringkasan hasil, `place_id`, dan tautan OSM bila ada.
+      label: Current result
+      description: Result summary, `place_id`, and OSM link if available.
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
-      label: Hasil yang diharapkan
-      description: Fitur mana yang seharusnya muncul dan mengapa.
+      label: Expected result
+      description: Which feature should appear, and why.
     validations:
       required: true
   - type: input
     id: index
     attributes:
       label: Index
-      description: Hash manifest dari `/healthz` atau nama rilis data.
+      description: Manifest hash from `/healthz` or the data release name.
       placeholder: places.idx 2026-11
   - type: checkboxes
     id: osm
     attributes:
-      label: Data sumber
+      label: Source data
       options:
-        - label: Saya sudah cek objek OSM terkait dan yakin datanya benar.
+        - label: I checked the related OSM objects and believe the data is correct.

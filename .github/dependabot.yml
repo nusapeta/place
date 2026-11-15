@@ -10,6 +10,10 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # The ref after @ is the Rust version, not the action version. Dependabot
+      # reads it as semver and proposes toolchains that do not exist.
+      - dependency-name: "dtolnay/rust-toolchain"
   - package-ecosystem: docker
     directory: /
     schedule:

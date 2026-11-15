@@ -3,16 +3,16 @@
 ## Melaporkan masalah
 
 Jangan membuka issue publik untuk kerentanan yang bisa dieksploitasi. Gunakan
-GitHub private security advisory jika repo tersedia di GitHub. Jika tidak,
-hubungi maintainer secara langsung dan sertakan:
+GitHub private security advisory di
+<https://github.com/nusapeta/place/security/advisories/new>. Sertakan:
 
 - Versi commit.
 - Langkah reproduksi.
 - Dampak yang mungkin.
 - Apakah masalah bisa dipicu lewat HTTP atau hanya lewat index yang rusak.
 
-Akan ada konfirmasi penerimaan, lalu perbaikan dan catatan rilis setelah
-masalah tertangani. Tidak ada janji waktu respons.
+Akan ada konfirmasi penerimaan dalam 7 hari, lalu perbaikan dan catatan rilis
+setelah masalah tertangani. Tidak ada janji tanggal perbaikan atau SLA.
 
 ## Model ancaman
 

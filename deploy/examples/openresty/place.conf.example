@@ -1,15 +1,17 @@
-# Rate limit per IP di edge openresty: nusapeta-place sendiri tidak punya rate limit.
+# Contoh vhost reverse proxy untuk Nusapeta Place. Salin ke site config
+# nginx/openresty Anda, ganti place.example.com dan path sertifikat, lalu
+# `nginx -t && nginx -s reload`. Place sendiri tidak punya TLS atau rate limit.
 limit_req_zone $binary_remote_addr zone=nusapeta-place:10m rate=20r/s;
 
-# Port 80 menerima dua jenis trafik: klien langsung (diarahkan ke https) dan
-# origin Cloudflare pada zona mode Flexible (X-Forwarded-Proto terisi). Redirect
-# tanpa syarat akan membuat loop 301 di mode itu, jadi syaratnya diperiksa.
+# Port 80 melayani redirect. Kalau ada proxy lain di depan (mis. Cloudflare
+# Flexible), redirect tanpa syarat bisa membuat loop; karena itu header
+# X-Forwarded-Proto diperiksa.
 server {
     listen 80;
-    server_name place.arifsani.xyz;
+    server_name place.example.com;
 
-    access_log /www/sites/arifsani.xyz/log/place-access.log main;
-    error_log /www/sites/arifsani.xyz/log/place-error.log;
+    access_log /var/log/nginx/place-access.log;
+    error_log /var/log/nginx/place-error.log;
 
     client_max_body_size 1m;
 
@@ -22,7 +24,7 @@ server {
     }
 
     location / {
-        proxy_pass http://127.0.0.1:18092;
+        proxy_pass http://127.0.0.1:8090;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -39,35 +41,32 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name place.arifsani.xyz;
+    server_name place.example.com;
 
-    # Sertifikat wildcard zona (*.arifsani.xyz, Cloudflare Origin CA). Hanya
-    # dipercaya browser kalau trafik lewat proxy Cloudflare; akses LAN langsung
-    # memunculkan peringatan sertifikat sampai Let's Encrypt diterbitkan untuk
-    # host ini.
-    ssl_certificate /www/sites/arifsani.xyz/ssl/fullchain.pem;
-    ssl_certificate_key /www/sites/arifsani.xyz/ssl/privkey.pem;
+    ssl_certificate /etc/nginx/ssl/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/privkey.pem;
     ssl_protocols TLSv1.3 TLSv1.2;
     ssl_prefer_server_ciphers on;
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 10m;
 
-    access_log /www/sites/arifsani.xyz/log/place-access.log main;
-    error_log /www/sites/arifsani.xyz/log/place-error.log;
+    access_log /var/log/nginx/place-access.log;
+    error_log /var/log/nginx/place-error.log;
 
     client_max_body_size 1m;
 
+    # Jangan pernah menerbitkan /metrics: isinya ukuran, umur, dan jumlah fitur.
     location = /metrics {
         return 404;
     }
 
     location = /healthz {
         access_log off;
-        proxy_pass http://127.0.0.1:18092;
+        proxy_pass http://127.0.0.1:8090;
     }
 
     location / {
-        proxy_pass http://127.0.0.1:18092;
+        proxy_pass http://127.0.0.1:8090;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

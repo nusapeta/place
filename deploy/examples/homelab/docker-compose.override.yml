@@ -1,0 +1,23 @@
+# Contoh override untuk host yang sudah punya container tunnel sendiri
+# (cloudflared, wireguard, atau reverse proxy lain) di jaringan Docker
+# eksternal. Service diberi alias di jaringan itu supaya tunnel bisa memanggil
+# http://nusapeta-place:8090 tanpa membuka port host ke LAN.
+#
+#   TUNNEL_NETWORK=nama-jaringan-anda \
+#   docker compose -f docker-compose.yml -f examples/homelab/docker-compose.override.yml up -d
+#
+# Cek jaringan yang dipakai container tunnel:
+#   docker inspect <container-tunnel> \
+#     --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}'
+services:
+  nusapeta-place:
+    networks:
+      default:
+      tunnel:
+        aliases:
+          - nusapeta-place
+
+networks:
+  tunnel:
+    external: true
+    name: ${TUNNEL_NETWORK:-1panel-network}

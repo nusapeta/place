@@ -6,6 +6,12 @@ rust-version = "1.99"
 license = "MIT"
 description = "Self-hosted OpenStreetMap geocoder for Indonesia"
 repository = "https://github.com/nusapeta/place"
+homepage = "https://github.com/nusapeta/place"
+readme = "README.md"
+keywords = ["geocoding", "openstreetmap", "indonesia", "search", "reverse-geocoding"]
+categories = ["science::geo"]
+# Binary application, not a library: install from releases or build from source.
+publish = false
 
 [features]
 default = ["build", "server"]

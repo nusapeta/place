@@ -1,17 +1,17 @@
 # Layanan produksi nusapeta-place: satu index Indonesia, satu container read-only.
-#   cd deploy && docker compose up -d
-# Index tidak dibangun di sini; artefak rilis dikirim ke ../data:
+#   cp .env.example .env && docker compose up -d
+# Index tidak dibangun di sini; artefak rilis diletakkan di ../data:
 #   places.idx, places.idx.json, places.idx.sha256.
 #
-# Nama project eksplisit: tanpa ini Compose memakai nama direktori (`deploy`),
-# sama dengan project routeid yang juga berada di direktori `deploy` di host.
+# Nama project eksplisit supaya beberapa deployment di host yang sama tidak
+# bertabrakan saat direktori juga bernama `deploy`.
 #
 # Satu container melayani satu index. Index immutable selama proses hidup:
-# index baru berarti restart (lihat docs/OPERATIONS.md §6).
+# index baru berarti restart (lihat docs/OPERATIONS.md).
 name: nusapeta-place
 
 x-nusapeta-place: &nusapeta-place
-  image: ${NUSA_PLACE_IMAGE:-nusapeta-place:0.1}
+  image: ${NUSA_PLACE_IMAGE:-ghcr.io/nusapeta/place:0.1.0}
   restart: unless-stopped
   user: "65532:65532"
   read_only: true
@@ -47,9 +47,9 @@ services:
     <<: *nusapeta-place
     container_name: nusapeta-place
     ports:
-      # Hanya loopback: jalur publik lewat Cloudflare Tunnel (lihat README),
-      # bukan port host. 18090/18091/18093 dipakai layanan lain di homelab.
-      - "127.0.0.1:18092:8090"
+      # Hanya loopback: jalur publik lewat reverse proxy atau tunnel, bukan
+      # port host. Ganti lewat NUSA_PLACE_PORT bila 8090 sudah dipakai.
+      - "127.0.0.1:${NUSA_PLACE_PORT:-8090}:8090"
     command:
       - --index
       - /data/places.idx

@@ -95,7 +95,12 @@ def check_requirements() -> list[str]:
     defined = set(re.findall(r"^#{2,4}\s+((?:FR|NFR)-\d{3})\b", srs, re.M))
     defined.update(re.findall(r"^\|\s*((?:FR|NFR)-\d{3})\s*\|", srs, re.M))
     id_re = re.compile(r"\b(?:FR|NFR)-\d{3}\b")
+    # Upstream Contributor Covenant text is kept verbatim; its RFC keywords are
+    # not part of this project's requirement vocabulary.
+    exempt = {"CODE_OF_CONDUCT.md"}
     for source in MD_FILES:
+        if source.relative_to(ROOT).as_posix() in exempt:
+            continue
         for number, line in enumerate(source.read_text(encoding="utf-8").splitlines(), 1):
             for req_id in id_re.findall(line):
                 if req_id not in defined:

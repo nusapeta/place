@@ -1,0 +1,5 @@
+[advisories]
+# osmpbf 0.3.8 hanya memakai Mmap::map; fungsi rentan (advise_range,
+# flush_range, flush_async_range) tidak dipanggil. Cabut ignore ini setelah
+# osmpbf merilis versi dengan memmap2 >= 0.9.11.
+ignore = ["RUSTSEC-2026-0186"]

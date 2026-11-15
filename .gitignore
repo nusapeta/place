@@ -21,6 +21,10 @@
 .vscode/
 *.swp
 
+# Python helper caches
+__pycache__/
+*.pyc
+
 # Fixture PBF kecil untuk test (dikecualikan dari larangan data)
 !tests/fixtures/*.pbf
 

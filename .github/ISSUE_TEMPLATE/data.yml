@@ -1,0 +1,55 @@
+name: Laporan data atau hasil pencarian
+description: Nama tempat hilang, peringkat salah, atau reverse meleset
+title: "data: "
+labels: ["data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Kebanyakan kesalahan berasal dari data OpenStreetMap. Perbaikan
+        permanen biasanya dilakukan di OSM, lalu index bulanan berikutnya ikut
+        memperbaikinya.
+  - type: textarea
+    id: query
+    attributes:
+      label: Query atau koordinat
+      description: Persis seperti yang dikirim, termasuk `limit` dan bahasa.
+      placeholder: "q=monas&limit=3 atau lat=-6.175392&lon=106.827153"
+    validations:
+      required: true
+  - type: dropdown
+    id: endpoint
+    attributes:
+      label: Endpoint
+      options:
+        - /search
+        - /reverse
+        - /lookup
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Hasil sekarang
+      description: Ringkasan hasil, `place_id`, dan tautan OSM bila ada.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Hasil yang diharapkan
+      description: Fitur mana yang seharusnya muncul dan mengapa.
+    validations:
+      required: true
+  - type: input
+    id: index
+    attributes:
+      label: Index
+      description: Hash manifest dari `/healthz` atau nama rilis data.
+      placeholder: places.idx 2026-11
+  - type: checkboxes
+    id: osm
+    attributes:
+      label: Data sumber
+      options:
+        - label: Saya sudah cek objek OSM terkait dan yakin datanya benar.

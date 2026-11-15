@@ -49,7 +49,30 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D warnings
       - name: Test
         run: cargo test --all-features
-      - name: Audit
-        uses: rustsec/audit-check@v2
+      - name: Install audit tools
+        uses: taiki-e/install-action@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          tool: cargo-audit,cargo-deny
+      - name: Audit
+        run: cargo audit
+      - name: Licenses
+        run: cargo deny check licenses
+
+  arm64:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      # Build and smoke only: runtime under QEMU is not a performance claim
+      # for NFR-007.
+      - name: Build arm64 image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64
+          push: false
+          load: true
+          tags: nusapeta-place:arm64
+      - name: Smoke arm64
+        run: docker run --rm --platform linux/arm64 nusapeta-place:arm64 --help

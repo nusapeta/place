@@ -19,6 +19,9 @@ pada mesin uji, bukan target. Catatan rilis:
 ## Mulai cepat
 
 ```bash
+git clone https://github.com/nusapeta/place.git
+cd place
+
 export PATH="$HOME/.cargo/bin:$PATH"
 cargo build --release --bins
 
@@ -63,9 +66,9 @@ cargo clippy --version
 toolchain host yang setara). Tanpa rustup, file pin tidak berlaku dan versi
 sistem bisa berbeda.
 
-Repo: <https://github.com/nusapeta/place> (private). Clone, issue, commit,
-dan push memakai GitHub CLI. Alur lengkap ada di
-[CONTRIBUTING.md](CONTRIBUTING.md#repo-dan-github-cli).
+Repo: <https://github.com/nusapeta/place>. Lisensi kode MIT, data ODbL 1.0.
+Panduan kontribusi ada di [CONTRIBUTING.md](CONTRIBUTING.md); laporan
+kerentanan lewat [SECURITY.md](SECURITY.md).
 
 ## Masalah
 

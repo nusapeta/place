@@ -109,36 +109,39 @@ Aturan container:
 - Batas memori 512 MB.
 - Healthcheck memanggil `/healthz`.
 
-### 3.1a Deploy homelab (Compose + tunnel 1Panel)
+### 3.1a Deploy contoh (Compose + tunnel)
 
-Host `arifsani-pc1` memakai Compose, bukan `docker run`. File lengkap ada di
-[`deploy/README.md`](../deploy/README.md); ringkasnya:
+Contoh deployment memakai Compose, bukan `docker run`. Override untuk host
+dengan container tunnel ada di
+[`deploy/examples/homelab/docker-compose.override.yml`](../deploy/examples/homelab/docker-compose.override.yml);
+ringkasnya:
 
 | Item | Nilai |
 |---|---|
 | Project Compose | `nusapeta-place` (`name:` eksplisit) |
-| Port host | `127.0.0.1:18092` (loopback, `8090` dipakai `nawasena-pb`) |
-| Alias jaringan | `nusapeta-place` di `1panel-network` (jaringan `cloudflared-tunnel`) |
+| Port host | `127.0.0.1:8090` (loopback, bisa diganti `NUSA_PLACE_PORT`) |
+| Alias jaringan | `nusapeta-place` di jaringan tunnel eksternal |
 | Batas memori | `256m`, `pids_limit` 128, `cap_drop: ALL` |
-| Artifak | `~/Projects/place/data/{places.idx,places.idx.json,places.idx.sha256}` |
+| Artifak | `data/{places.idx,places.idx.json,places.idx.sha256}` |
 
 ```bash
-cd ~/Projects/place/deploy
-docker compose up -d            # .env memuat COMPOSE_FILE dengan override homelab
-curl -fsS 127.0.0.1:18092/healthz
+cd deploy
+cp .env.example .env
+docker compose up -d
+curl -fsS 127.0.0.1:8090/healthz
 ```
 
 Index dibangun di mesin lain (puncak RSS 8,2 GB) lalu dikirim sebagai artefak;
-image dipindahkan dengan `docker save | ssh ... docker load`. Jangan pernah
-membangun index di host dengan 7,8 GB RAM.
+image dipindahkan dengan `docker save | ssh ... docker load`. Jangan membangun
+index di host dengan RAM 7,8 GB.
 
-Akses publik memakai bundle gateway `routeid`, karena ingress tunnel
-mencocokkan hostname asli dan hanya `route.arifsani.xyz` yang punya rule:
+Akses publik bisa memakai prefix di gateway route, karena ingress tunnel
+mencocokkan hostname asli:
 
 | Path publik | Diteruskan ke |
 |---|---|
-| `https://route.arifsani.xyz/place/*` | `http://nusapeta-place:8090` |
-| `https://route.arifsani.xyz/route` | `routeid` / `routeid-motor` |
+| `https://route.example.com/place/*` | `http://nusapeta-place:8090` |
+| `https://route.example.com/route` | `nusapeta-route` / `nusapeta-route-motor` |
 
 Gateway itu membuang prefix sebelum meneruskan, jadi kontrak `/search`,
 `/reverse`, `/lookup`, dan `/healthz` tidak berubah. Healthcheck gateway tetap
@@ -149,15 +152,14 @@ Dua hal yang tidak boleh dilepas:
 
 - `/metrics` wajib ditutup di jalur publik, karena endpoint itu selalu aktif
   dan memuat ukuran serta umur index. Bundle menutupnya dengan
-  `-block-metrics` di gateway; vhost openresty menutupnya sendiri.
+  `-block-metrics` di gateway; vhost nginx menutupnya sendiri.
 - Kuota per IP untuk `/place` (240/menit, burst 40) menjaga agar satu klien
   tidak menghabiskan CPU host: pencarian memindai seluruh index dan plafon
   terukurnya sekitar 20 RPS.
 
-Hostname khusus `place.arifsani.xyz` belum aktif: CNAME-nya sudah ada, tetapi
-tunnel belum punya rule untuk hostname itu sehingga jawabannya `404`. Prosedur
-dan jalur yang sudah terbukti gagal ada di
-[`deploy/README.md`](../deploy/README.md) §4.2.
+Hostname khusus bisa ditambahkan dengan menyalin
+[`deploy/examples/openresty/place.conf.example`](../deploy/examples/openresty/place.conf.example).
+Vhost itu menutup `/metrics` dengan `404` dan memberi `limit_req` 20 r/s per IP.
 
 ### 3.2 systemd
 

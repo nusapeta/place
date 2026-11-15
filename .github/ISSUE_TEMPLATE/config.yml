@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Kontrak HTTP
+    url: https://github.com/nusapeta/place/blob/main/docs/API.md
+    about: Endpoint, parameter, error, dan contoh respons.
+  - name: Format index
+    url: https://github.com/nusapeta/place/blob/main/docs/INDEX-FORMAT.md
+    about: Layout file, checksum, dan kompatibilitas versi.
+  - name: Operasi dan rollback
+    url: https://github.com/nusapeta/place/blob/main/docs/OPERATIONS.md
+    about: Build, deploy, rebuild, promote, dan rollback.
+  - name: Kerentanan
+    url: https://github.com/nusapeta/place/security/advisories/new
+    about: Laporkan lewat private advisory, bukan issue publik.

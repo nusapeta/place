@@ -1,28 +1,84 @@
 # Nusapeta Place
 
-Geocoder mandiri untuk Indonesia dari OpenStreetMap. Target bentuknya satu
-crate Rust dengan dua binary, builder batch dan server HTTP, satu file index
-`mmap`, dan tanpa service database.
+A self-hosted OpenStreetMap geocoder for Indonesia. One Rust crate, two
+binaries (batch builder and HTTP server), one memory-mapped index, no database
+service.
 
-> **English:** Nusapeta Place is a self-hosted OpenStreetMap geocoder for Indonesia.
-> It resolves place names, performs nearest-feature reverse geocoding, and
-> exposes stable place identifiers. The design target is a small operational
-> footprint: one Rust crate with two binaries, one server process, one
-> memory-mapped index file, and no database service.
+[![Rust](https://img.shields.io/badge/Rust-1.99-000000?logo=rust)](rust-toolchain.toml)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Data](https://img.shields.io/badge/data-ODbL-green)](https://www.openstreetmap.org/copyright)
+[![Status](https://img.shields.io/badge/status-research%20preview-orange)](#limitations)
 
-Status: **v1 kandidat rilis**. Builder, server, format index, dataset uji,
-container, metrik, alert, dan prosedur promote/rollback sudah ada. Angka
-performa di [docs/BENCHMARKS.md](docs/BENCHMARKS.md) adalah hasil pengukuran
-pada mesin uji, bukan target. Catatan rilis:
-[docs/releases/0.1.0.md](docs/releases/0.1.0.md).
+[Bahasa Indonesia](README.id.md) | English
 
-## Mulai cepat
+**Not Google Place ID.** Nusapeta Place has no affiliation with Google. Its
+`place_id` is a stable 53-bit identifier derived from `(osm_type, osm_id)`, not
+a Google Place ID and not interchangeable with one.
+
+## What it solves
+
+Apps that need Indonesian place search usually choose a hosted API with
+per-request pricing, or run full Nominatim with PostgreSQL, several GB of RAM,
+and a long import. For a narrow workload (place names, POIs, roads, and nearest
+feature), most of that capacity is unused.
+
+Nusapeta Place takes a smaller problem boundary:
+
+- Indonesia only in v1.
+- Place names, POIs, roads, and administrative areas.
+- Forward search, reverse nearest, and ID lookup.
+- Full rebuild from a PBF, not diff updates.
+- One index file that can be promoted and rolled back as an artifact.
+
+Measured footprint: **142 MB** index, **6.15 MiB** idle RSS, **288 s** to build
+from the national PBF. The route engine adds about 11 MB idle RSS, putting a
+combined stack around **17 MB** when idle. Numbers are from the test machine;
+reproduction is in [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md).
+
+## Quick start from the release artifact
+
+Requires Docker, curl, and sha256sum.
+
+```bash
+mkdir -p place-data && cd place-data
+base=https://github.com/nusapeta/place/releases/download/data-2026.11
+curl -fsSLO "$base/places-2026.11.idx"
+curl -fsSLO "$base/places-2026.11.idx.json"
+curl -fsSLO "$base/places-2026.11.idx.sha256"
+sha256sum -c places-2026.11.idx.sha256
+
+docker run --rm -p 127.0.0.1:8090:8090 -v "$PWD:/data:ro" \
+  ghcr.io/nusapeta/place:0.1.0 \
+  --index /data/places-2026.11.idx \
+  --manifest /data/places-2026.11.idx.json \
+  --verify-checksum
+```
+
+In another terminal:
+
+```bash
+curl 'http://127.0.0.1:8090/search?q=monas&limit=3'
+curl 'http://127.0.0.1:8090/reverse?lat=-6.175392&lon=106.827153'
+curl 'http://127.0.0.1:8090/healthz'
+```
+
+The index checksum has two forms. The release `.sha256` covers the whole file
+(`a732b4ec…836d`). The manifest's `index.sha256` covers the index body without
+its 32-byte trailer (`0df44207…2bca`); `--verify-checksum` checks that trailer.
+See [`docs/releases/0.1.0.md`](docs/releases/0.1.0.md).
+
+The combined routing and geocoding stack is
+[`nusapeta/stack`](https://github.com/nusapeta/stack).
+
+## Build from source
+
+The toolchain is pinned in `rust-toolchain.toml`: Rust 1.99.1 with `rustfmt` and
+`clippy`, minimal profile.
 
 ```bash
 git clone https://github.com/nusapeta/place.git
 cd place
 
-export PATH="$HOME/.cargo/bin:$PATH"
 cargo build --release --bins
 
 target/release/nusa-place-build \
@@ -37,105 +93,54 @@ target/release/nusa-place \
   --bind 127.0.0.1:8090
 ```
 
-Uji endpoint:
+A full national build needs about 8 GiB peak RAM. The final index is
+141,997,032 B for 1,226,755 features and 9,360 administrative areas. The
+container listens on 8090 and expects the index under `/data`.
 
-```bash
-curl 'http://127.0.0.1:8090/search?q=monas&limit=3'
-curl 'http://127.0.0.1:8090/reverse?lat=-6.175392&lon=106.827153'
-curl 'http://127.0.0.1:8090/lookup?osm_ids=N1308678148'
-curl 'http://127.0.0.1:8090/healthz'
-curl 'http://127.0.0.1:8090/metrics'
-```
+## Measured corpus
 
-Build penuh Indonesia memerlukan PBF dan RAM puncak sekitar 8 GiB. Index
-final 141.997.032 B untuk 1.226.755 fitur. Container memakai port 8090 dan
-mengharapkan index di `/data`.
+The census was run on 2026-11-13 against `data/indonesia-latest.osm.pbf`. These
+are corpus counts, not index results.
 
-## Toolchain
-
-Toolchain dipin di `rust-toolchain.toml`: Rust `1.99.1` dengan `rustfmt` dan
-`clippy`, profil minimal. Pasang rustup, lalu jalankan:
-
-```bash
-rustup show
-cargo fmt --version
-cargo clippy --version
-```
-
-`rustup show` harus menampilkan `1.99.1-x86_64-unknown-linux-gnu` (atau
-toolchain host yang setara). Tanpa rustup, file pin tidak berlaku dan versi
-sistem bisa berbeda.
-
-Repo: <https://github.com/nusapeta/place>. Lisensi kode MIT, data ODbL 1.0.
-Panduan kontribusi ada di [CONTRIBUTING.md](CONTRIBUTING.md); laporan
-kerentanan lewat [SECURITY.md](SECURITY.md).
-
-## Masalah
-
-Aplikasi yang butuh pencarian tempat di Indonesia biasanya memakai layanan
-hosted dengan biaya per request, atau menjalankan Nominatim lengkap yang
-memerlukan PostgreSQL, beberapa GB RAM, dan proses impor panjang. Untuk
-kebutuhan yang sempit, yaitu mencari nama tempat, POI, jalan, dan mencari
-fitur terdekat, sebagian besar kapasitas itu tidak terpakai.
-
-`nusapeta-place` mengambil batas masalah yang lebih kecil:
-
-- Data Indonesia saja pada v1.
-- Nama tempat, POI, jalan, dan wilayah administratif.
-- Forward search, reverse nearest, dan lookup ID.
-- Rebuild penuh dari file PBF, bukan update diff.
-- Satu file index yang bisa dipromosikan dan di-rollback sebagai artefak.
-
-## Korpus yang diukur
-
-Sensus berikut dijalankan pada 2026-11-13 terhadap extract Indonesia yang
-dipakai routeid, `data/indonesia-latest.osm.pbf`. Angka ini adalah isi korpus,
-bukan hasil index `nusapeta-place`.
-
-| Objek | Total | Bernama | Punya `addr:housenumber` |
+| Object | Total | Named | With `addr:housenumber` |
 |---|---:|---:|---:|
-| Node | 277.198.053 | 346.846 | 39.386 |
-| Way | 50.921.496 | 878.076 | 67.702 |
-| Relation | 71.229 | 39.027 | 0 |
-| Total | 328.190.778 | 1.263.949 | 107.088 |
+| Nodes | 277,198,053 | 346,846 | 39,386 |
+| Ways | 50,921,496 | 878,076 | 67,702 |
+| Relations | 71,229 | 39,027 | 0 |
+| Total | 328,190,778 | 1,263,949 | 107,088 |
 
-Jumlah nama unik mentah 645.238 dengan total 21.243.045 byte teks nama,
-sekitar 21,2 MB. Setelah normalisasi menjadi 612.877 nama unik. Artinya,
-bagian teks bukan bagian terbesar dari index. Ongkos utama ada di record,
-postings, grid spasial, dan opsional polygon administratif.
-
-Konsekuensi produk: geocoding nomor rumah tidak masuk v1. Hanya 107.088 objek
-yang punya `addr:housenumber`, tersebar tidak merata, dan tidak cukup untuk
-mengklaim akurasi alamat. Rincian token, duplikasi nama, ukuran FST, dan
-occupancy grid ada di
-[docs/research/LIGHTWEIGHT-METHODS.md](docs/research/LIGHTWEIGHT-METHODS.md).
+There are 645,238 raw unique names, 21,243,045 bytes of name text, and 612,877
+names after normalization. Name text is not the main cost: records, postings,
+the spatial grid, and optional administrative polygons dominate. House-number
+geocoding is out of scope for v1: only 107,088 objects have
+`addr:housenumber`, unevenly distributed.
 
 ## Scope v1
 
-- `GET /search?q=...` untuk nama tempat, POI, jalan, dan wilayah.
-- `GET /reverse?lat=...&lon=...` untuk fitur bernama terdekat.
-- `GET /lookup?osm_ids=...` dan lookup `place_id`.
-- Hierarki administratif untuk `display_name` dan `address`, bila polygon
-  tersedia.
-- Normalisasi nama Indonesia: huruf kecil, diakritik, singkatan umum seperti
-  `Jl.`, `Kec.`, `Kab.`, `Kel.`, `Kp.`.
-- Alias dari `name:id`, `name:en`, `alt_name`, `old_name`, `official_name`,
-  `short_name`, dan `brand`.
-- Endpoint operasional: `/healthz`, `/version`, `/metrics`.
+- `GET /search?q=...` for place names, POIs, roads, and areas.
+- `GET /reverse?lat=...&lon=...` for the nearest named feature.
+- `GET /lookup?osm_ids=...` and `place_id` lookup.
+- Administrative hierarchy for `display_name` and `address` when polygons are
+  available.
+- Indonesian name normalization: lowercase, diacritics, common abbreviations
+  such as `Jl.`, `Kec.`, `Kab.`, `Kel.`, `Kp.`.
+- Aliases from `name:id`, `name:en`, `alt_name`, `old_name`, `official_name`,
+  `short_name`, and `brand`.
+- Operational endpoints: `/healthz`, `/version`, `/metrics`.
 
 ## Non-goals v1
 
-- Parity penuh dengan Nominatim.
-- Geocoding nomor rumah dan interpolasi alamat.
-- Update diff harian atau streaming replication.
-- Routing, map matching, isochrone, atau polygon output.
-- Cakupan dunia. Index v1 dibangun untuk Indonesia.
-- Menjadi layanan publik multi-tenant dengan billing dan SLA.
+- Full Nominatim parity.
+- House-number geocoding and address interpolation.
+- Daily diff updates or streaming replication.
+- Routing, map matching, isochrones, or polygon output.
+- Worldwide coverage. The v1 index is built for Indonesia.
+- A multi-tenant public service with billing and an SLA.
 
-## Bentuk teknis yang dituju
+## Technical shape
 
 ```text
-PBF Indonesia
+Indonesia PBF
     |
     v
 nusa-place-build  (Rust, batch)
@@ -147,39 +152,59 @@ places.idx + places.idx.json
 nusa-place  (Rust, HTTP, mmap read-only)
 ```
 
-Index menyimpan record fitur, string asli, token FST, postings, name FST,
-grid spasial, dan opsional polygon administratif. `place_id` diturunkan dari
-`(osm_type, osm_id)` dan aman disimpan sebagai angka JavaScript 53-bit. Detail
-kontrak ada di [docs/INDEX-FORMAT.md](docs/INDEX-FORMAT.md) dan
-[docs/decisions/0003-place-id.md](docs/decisions/0003-place-id.md).
+The index stores feature records, original strings, token FSTs, postings, a
+name FST, a spatial grid, and optional administrative polygons. `place_id` is
+derived from `(osm_type, osm_id)` and fits in the 53-bit safe-integer range for
+JavaScript clients. Contract details:
+[`docs/INDEX-FORMAT.md`](docs/INDEX-FORMAT.md).
 
-## Dokumentasi
+## Comparison, with limits
 
-| Dokumen | Isi |
+| Property | Nusapeta Place | Nominatim |
+|---|---|---|
+| Storage engine | custom mmap index | PostgreSQL + PostGIS |
+| Index / database size | 142 MB | not measured here |
+| Idle RSS | 6.15 MiB | not measured here |
+| House-number geocoding | no | yes |
+| Update model | full rebuild | diff replication |
+| Coverage | Indonesia | worldwide |
+
+No head-to-head latency or relevance benchmark against Nominatim is claimed.
+The place benchmark in [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md) covers this
+engine only.
+
+## Limitations
+
+- **No house-number accuracy claim.** Address coverage is sparse.
+- **No real-time updates.** A new index is a full rebuild and a restart.
+- **Relevance is measured, not guaranteed.** The benchmark reports this corpus;
+  it is not a promise for every query.
+- **Administrative polygons are incomplete.** The national build logged 46
+  missing refs and 43 invalid polygons; affected features get a shorter
+  `display_name`.
+- **Not Google Place ID.** See the disclaimer at the top.
+
+## Documentation
+
+| Document | Content |
 |---|---|
-| [docs/PRD.md](docs/PRD.md) | Masalah, pengguna, scope, requirement produk, metrik sukses |
-| [docs/SRS.md](docs/SRS.md) | Requirement fungsional dan nonfungsional yang bisa diuji |
-| [docs/TRD.md](docs/TRD.md) | Rancangan teknis, pipeline build, ranking, risiko |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Diagram konteks, container, alur build dan query |
-| [docs/API.md](docs/API.md) | Kontrak HTTP dan kompatibilitas subset Nominatim |
-| [docs/INDEX-FORMAT.md](docs/INDEX-FORMAT.md) | Layout file index, validasi, versioning |
-| [docs/BENCHMARKS.md](docs/BENCHMARKS.md) | Protokol benchmark dan format pelaporan hasil |
-| [docs/OPERATIONS.md](docs/OPERATIONS.md) | Build, deploy, rebuild, rollback, troubleshooting |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Fase pekerjaan dan exit criteria |
-| [docs/BACKLOG.md](docs/BACKLOG.md) | Task yang bisa dilacak, ukuran, dependensi, acceptance |
-| [docs/research/LIGHTWEIGHT-METHODS.md](docs/research/LIGHTWEIGHT-METHODS.md) | Riset metode ringan dan akurat, bukti, rekomendasi |
-| [docs/research/P4-EVIDENCE.md](docs/research/P4-EVIDENCE.md) | Relevance, reverse, beban, dan drill release |
-| [docs/research/NFR-REVIEW.md](docs/research/NFR-REVIEW.md) | Status gate NFR |
-| [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) | Lisensi, audit, dan atribusi |
-| [deploy/README.md](deploy/README.md) | Deploy container, Compose homelab, tunnel, update, rollback |
-| [docs/releases/0.1.0.md](docs/releases/0.1.0.md) | Catatan rilis |
-| [docs/GLOSSARY.md](docs/GLOSSARY.md) | Istilah teknis yang dipakai di repo |
-| [docs/decisions/](docs/decisions/) | Architecture Decision Records |
+| [`docs/en/QUICKSTART.md`](docs/en/QUICKSTART.md) | release artifact to first query |
+| [`docs/en/API.md`](docs/en/API.md) | English HTTP API contract |
+| [`docs/en/ARCHITECTURE.md`](docs/en/ARCHITECTURE.md) | English architecture copy |
+| [`docs/API.md`](docs/API.md) | canonical HTTP contract and Nominatim subset |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | context, containers, build and query flow |
+| [`docs/INDEX-FORMAT.md`](docs/INDEX-FORMAT.md) | index layout, validation, versioning |
+| [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md) | benchmark protocol and results |
+| [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | build, deploy, rebuild, rollback |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | phases and exit criteria |
+| [`docs/research/`](docs/research/) | method research and evidence |
+| [`deploy/README.md`](deploy/README.md) | container, Compose, tunnel, rollback |
+| [`docs/releases/0.1.0.md`](docs/releases/0.1.0.md) | release notes |
 
-Indeks dokumentasi dan aturan perubahan ada di
-[docs/README.md](docs/README.md).
+The document index and change rules are in [`docs/README.md`](docs/README.md).
 
-## Lisensi
+## License
 
-Kode: MIT, lihat [LICENSE](LICENSE). Data OpenStreetMap: ODbL 1.0. Respons API
-dan dokumentasi wajib membawa atribusi ke OpenStreetMap contributors.
+Code: MIT, see [LICENSE](LICENSE). OpenStreetMap data: ODbL 1.0, see
+[`LICENSE-DATA`](LICENSE-DATA). API responses and documentation must carry
+attribution to OpenStreetMap contributors.

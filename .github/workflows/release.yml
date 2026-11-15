@@ -45,7 +45,7 @@ jobs:
           cp LICENSE LICENSE-DATA README.md "dist/$name/"
           tar -C dist -czf "dist/$name.tar.gz" "$name"
           rm -rf "dist/$name"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: binaries-${{ matrix.target }}
           path: dist/*.tar.gz

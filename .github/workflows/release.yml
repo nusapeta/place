@@ -67,8 +67,8 @@ jobs:
         with:
           files: dist/*
           # The repository history is not a release note: the first tag would
-          # list every commit ever made. This file is written for readers.
-          body_path: docs/releases/0.1.0.en.md
+          # list every commit ever made. One file per tag, named after it.
+          body_path: docs/releases/${{ github.ref_name }}.en.md
 
   image:
     runs-on: ubuntu-24.04

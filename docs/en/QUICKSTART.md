@@ -68,7 +68,7 @@ mkdir -p /srv/nusapeta-place/releases/2026-11
   --verify
 ```
 
-A national build takes 288 s and about 8 GiB peak RAM on the test machine. The
+A national build takes 228 s and about 8 GiB peak RAM on the test machine. The
 builder writes a temporary file and renames it atomically; a failed build leaves
 the old index untouched.
 

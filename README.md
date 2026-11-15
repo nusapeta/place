@@ -11,33 +11,18 @@ service.
 
 [Bahasa Indonesia](README.id.md) | English
 
+**A self-hosted geo stack for Indonesia: routing + geocoding, one file per
+engine, under 20 MB idle, rebuilt in minutes, no database.** This repository is
+the geocoding half; the router is
+[`nusapeta/route`](https://github.com/nusapeta/route) and the compose bundle is
+[`nusapeta/stack`](https://github.com/nusapeta/stack).
+
+`6.15 MiB` idle RSS · `142 MB` index · `228 s` to build from the national PBF ·
+`±17 MB` for the route + place stack when idle.
+
 **Not Google Place ID.** Nusapeta Place has no affiliation with Google. Its
 `place_id` is a stable 53-bit identifier derived from `(osm_type, osm_id)`, not
 a Google Place ID and not interchangeable with one.
-
-## What it solves
-
-Apps that need Indonesian place search usually choose a hosted API with
-per-request pricing, or run full Nominatim with PostgreSQL, several GB of RAM,
-and a long import. For a narrow workload (place names, POIs, roads, and nearest
-feature), most of that capacity is unused.
-
-Nusapeta Place takes a smaller problem boundary:
-
-- Indonesia only in v1.
-- Place names, POIs, roads, and administrative areas.
-- Forward search, reverse nearest, and ID lookup.
-- Full rebuild from a PBF, not diff updates.
-- One index file that can be promoted and rolled back as an artifact.
-
-Measured footprint: **142 MB** index, **6.15 MiB** idle RSS, **288 s** to build
-from the national PBF. The route engine adds about 11 MB idle RSS, putting a
-combined stack around **17 MB** when idle. Numbers are from the test machine;
-reproduction is in [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md).
-
-Research preview, one maintainer, no SLA. Data artifacts are refreshed monthly
-on a best-effort basis. Large feature pull requests MAY be declined even when
-correct; open an issue before writing one.
 
 ## Quick start from the release artifact
 
@@ -70,6 +55,34 @@ The index checksum has two forms. The release `.sha256` covers the whole file
 (`a732b4ec…836d`). The manifest's `index.sha256` covers the index body without
 its 32-byte trailer (`0df44207…2bca`); `--verify-checksum` checks that trailer.
 See [`docs/releases/0.1.0.md`](docs/releases/0.1.0.md).
+
+**Read more:** [what it solves](#what-it-solves) · [measured
+corpus](#measured-corpus) · [scope](#scope-v1) · [technical
+shape](#technical-shape) · [limits](#limitations) · [build from
+source](#build-from-source) · [documentation](#documentation)
+
+## What it solves
+
+Apps that need Indonesian place search usually choose a hosted API with
+per-request pricing, or run full Nominatim with PostgreSQL, several GB of RAM,
+and a long import. For a narrow workload (place names, POIs, roads, and nearest
+feature), most of that capacity is unused.
+
+Nusapeta Place takes a smaller problem boundary:
+
+- Indonesia only in v1.
+- Place names, POIs, roads, and administrative areas.
+- Forward search, reverse nearest, and ID lookup.
+- Full rebuild from a PBF, not diff updates.
+- One index file that can be promoted and rolled back as an artifact.
+
+Measured footprint and reproduction steps: [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md).
+The route engine adds about 11 MB idle RSS, so the combined stack idles near
+17 MB.
+
+Research preview, one maintainer, no SLA. Data artifacts are refreshed monthly
+on a best-effort basis. Large feature pull requests MAY be declined even when
+correct; open an issue before writing one.
 
 The combined routing and geocoding stack is
 [`nusapeta/stack`](https://github.com/nusapeta/stack).

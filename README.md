@@ -12,13 +12,13 @@ service.
 [Bahasa Indonesia](README.id.md) | English
 
 **A self-hosted geo stack for Indonesia: routing + geocoding, one file per
-engine, under 20 MB idle, rebuilt in minutes, no database.** This repository is
+engine, about 48 MB idle, rebuilt in minutes, no database.** This repository is
 the geocoding half; the router is
 [`nusapeta/route`](https://github.com/nusapeta/route) and the compose bundle is
 [`nusapeta/stack`](https://github.com/nusapeta/stack).
 
 `6.15 MiB` idle RSS · `142 MB` index · `228 s` to build from the national PBF ·
-`±17 MB` for the route + place stack when idle.
+`47 MiB` for the running compose stack, four processes.
 
 **Not Google Place ID.** Nusapeta Place has no affiliation with Google. Its
 `place_id` is a stable 53-bit identifier derived from `(osm_type, osm_id)`, not
@@ -77,8 +77,8 @@ Nusapeta Place takes a smaller problem boundary:
 - One index file that can be promoted and rolled back as an artifact.
 
 Measured footprint and reproduction steps: [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md).
-The route engine adds about 11 MB idle RSS, so the combined stack idles near
-17 MB.
+The running compose stack (two route profiles, this geocoder, and the gateway)
+idles at 48,480 kB RSS / 41,369 kB PSS across four processes.
 
 Research preview, one maintainer, no SLA. Data artifacts are refreshed monthly
 on a best-effort basis. Large feature pull requests MAY be declined even when

@@ -17,8 +17,8 @@ the geocoding half; the router is
 [`nusapeta/route`](https://github.com/nusapeta/route) and the compose bundle is
 [`nusapeta/stack`](https://github.com/nusapeta/stack).
 
-`6.15 MiB` idle RSS · `142 MB` index · `228 s` to build from the national PBF ·
-`±17 MB` for the route + place stack when idle.
+`6.15 MiB` idle RSS · `142 MB` index · `228 to 288 s` to build from the
+national PBF · `±17 MB` for the route + place stack when idle.
 
 **Not Google Place ID.** Nusapeta Place has no affiliation with Google. Its
 `place_id` is a stable 53-bit identifier derived from `(osm_type, osm_id)`, not

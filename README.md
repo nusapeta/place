@@ -35,6 +35,10 @@ from the national PBF. The route engine adds about 11 MB idle RSS, putting a
 combined stack around **17 MB** when idle. Numbers are from the test machine;
 reproduction is in [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md).
 
+Research preview, one maintainer, no SLA. Data artifacts are refreshed monthly
+on a best-effort basis. Large feature pull requests MAY be declined even when
+correct; open an issue before writing one.
+
 ## Quick start from the release artifact
 
 Requires Docker, curl, and sha256sum.

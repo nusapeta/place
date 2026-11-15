@@ -11,18 +11,18 @@ dokumen sekarang dan untuk kode saat crate dibuat.
 3. Jika perubahan mengubah repo, bahasa, format index, derivasi `place_id`,
    atau tingkat kompatibilitas API, tulis ADR di
    [docs/decisions/](docs/decisions/).
-4. Jangan mengubah `routeid` untuk pekerjaan `placeid`.
+4. Jangan mengubah `routeid` untuk pekerjaan `nusapeta-place`.
 
 ## Repo dan GitHub CLI
 
-Repo remote: <https://github.com/arifsans/placeid> (private). Autentikasi dan
+Repo remote: <https://github.com/nusapeta/place> (private). Autentikasi dan
 operasi GitHub memakai `gh`, bukan token yang ditulis di file repo.
 
 ```bash
 gh auth login
 gh auth status
-gh repo view arifsans/placeid
-gh repo clone arifsans/placeid
+gh repo view arifsans/nusapeta-place
+gh repo clone arifsans/nusapeta-place
 ```
 
 `gh auth setup-git` menyiapkan credential helper untuk `git push`. Jangan

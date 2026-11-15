@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure top-1, p95 latency, and idle RSS of a running placeid server."""
+"""Measure top-1, p95 latency, and idle RSS of a running nusapeta-place server."""
 
 import json
 import sys

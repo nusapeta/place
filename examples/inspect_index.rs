@@ -1,7 +1,7 @@
 //! Print index counts used by Indonesia build acceptance checks.
 
 use fst::Streamer;
-use placeid::Index;
+use nusa_place::Index;
 use std::collections::BTreeMap;
 
 fn main() -> anyhow::Result<()> {

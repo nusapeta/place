@@ -1,7 +1,7 @@
 # Override homelab: cloudflared sudah berjalan sebagai container 1Panel
 # (`cloudflared-tunnel`) di jaringan `1panel-network`, bukan service di compose
 # ini. Service diberi alias di jaringan itu supaya ingress tunnel
-# `http://placeid:8090` resolve tanpa membuka port host ke LAN.
+# `http://nusapeta-place:8090` resolve tanpa membuka port host ke LAN.
 #
 #   cd deploy
 #   docker compose -f docker-compose.yml -f docker-compose.homelab.yml up -d
@@ -10,12 +10,12 @@
 #   docker inspect cloudflared-tunnel \
 #     --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}'
 services:
-  placeid:
+  nusapeta-place:
     networks:
       default:
       tunnel:
         aliases:
-          - placeid
+          - nusapeta-place
 
 networks:
   tunnel:

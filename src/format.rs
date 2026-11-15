@@ -1,10 +1,12 @@
-//! Core data structures for the placeid index format v1.
+//! Core data structures for the nusapeta-place index format v1.
 //!
 //! The on-disk layout is documented in `docs/INDEX-FORMAT.md`. All integers
 //! are little-endian. Records are fixed-size and contain no pointers.
 
 use bytemuck::{Pod, Zeroable};
 
+/// On-disk format identifier, not a brand: indexes built before the nusapeta
+/// rename still start with it, so it only changes with a format version bump.
 pub const MAGIC: [u8; 8] = *b"PLACEID\0";
 pub const FORMAT_VERSION: u16 = 1;
 pub const HEADER_BYTES: usize = 256;

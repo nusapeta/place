@@ -27,8 +27,8 @@ masalah tertangani. Tidak ada janji waktu respons.
 
 ## Batas
 
-`placeid` tidak menangani autentikasi, TLS, atau rate limit. Itu tanggung
-jawab gateway. Jangan mengekspos port `placeid` langsung ke internet.
+`nusapeta-place` tidak menangani autentikasi, TLS, atau rate limit. Itu tanggung
+jawab gateway. Jangan mengekspos port `nusapeta-place` langsung ke internet.
 
 ## Yang dianggap kerentanan
 

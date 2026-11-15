@@ -4,7 +4,7 @@
 |---|---|
 | Status | Proposed, Accepted, Superseded, atau Rejected |
 | Tanggal | YYYY-MM-DD |
-| Konteks | placeid v1 |
+| Konteks | Nusapeta Place v1 |
 
 ## Konteks
 

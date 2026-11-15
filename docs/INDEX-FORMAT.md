@@ -1,4 +1,4 @@
-# Format index placeid
+# Format index Nusapeta Place
 
 | Field | Value |
 |---|---|
@@ -65,7 +65,7 @@ Header berukuran tepat 256 byte.
 
 | Offset | Ukuran | Field | Isi |
 |---:|---:|---|---|
-| 0 | 8 | `magic` | `PLACEID\0` |
+| 0 | 8 | `magic` | `PLACEID\0` (identifier format, dipertahankan saat rename) |
 | 8 | 2 | `format_version` | `1` |
 | 10 | 2 | `flags` | Bit 0: admin polygons ada |
 | 12 | 4 | `header_bytes` | `256` |
@@ -353,7 +353,7 @@ Manifest adalah JSON terpisah, ditulis setelah index selesai. Field minimum:
 ```json
 {
   "format_version": 1,
-  "builder": "placeid-build 0.1.0",
+  "builder": "nusa-place-build 0.1.0",
   "built_at": "2026-11-13T00:00:00Z",
   "pbf": {
     "name": "indonesia-latest.osm.pbf",

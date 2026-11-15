@@ -1,8 +1,8 @@
-//! End-to-end HTTP tests against the real `placeid-serve` binary.
+//! End-to-end HTTP tests against the real `nusa-place` binary.
 
-use placeid::build::build_data;
-use placeid::manifest::write_manifest;
-use placeid::writer::write_index;
+use nusa_place::build::build_data;
+use nusa_place::manifest::write_manifest;
+use nusa_place::writer::write_index;
 use serde_json::Value;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
@@ -104,7 +104,7 @@ fn build_fixture(dir: &Path) -> (PathBuf, PathBuf) {
 
 fn start(index: &Path, manifest: &Path) -> Server {
     let port = free_port();
-    let child = Command::new(env!("CARGO_BIN_EXE_placeid-serve"))
+    let child = Command::new(env!("CARGO_BIN_EXE_nusa-place"))
         .arg("--index")
         .arg(index)
         .arg("--manifest")
@@ -215,8 +215,8 @@ fn all_endpoints_serve_the_fixture() {
     assert_eq!(found[1]["osm_type"], "way");
     assert_eq!(found[1]["osm_id"], 100);
 
-    let node_id = placeid::place_id::encode(1, 1).unwrap();
-    let way_id = placeid::place_id::encode(2, 100).unwrap();
+    let node_id = nusa_place::place_id::encode(1, 1).unwrap();
+    let way_id = nusa_place::place_id::encode(2, 100).unwrap();
     let by_place = request(
         port,
         "GET",
@@ -246,8 +246,8 @@ fn all_endpoints_serve_the_fixture() {
             .starts_with("text/plain")
     );
     let text = String::from_utf8_lossy(&metrics.body);
-    assert!(text.contains("placeid_requests_total"));
-    assert!(text.contains("placeid_index_features 13"));
+    assert!(text.contains("nusa_place_requests_total"));
+    assert!(text.contains("nusa_place_index_features 13"));
 }
 
 #[test]

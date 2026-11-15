@@ -1,4 +1,4 @@
-# TRD: placeid
+# TRD: Nusapeta Place
 
 | Field | Value |
 |---|---|
@@ -9,7 +9,7 @@
 
 ## 1. Tujuan teknis
 
-TRD ini menjelaskan cara membangun `placeid` dengan biaya operasional kecil:
+TRD ini menjelaskan cara membangun `nusapeta-place` dengan biaya operasional kecil:
 satu binary server, satu file index `mmap`, dan build batch dari PBF. Fokus
 rancangan ada pada tiga hal:
 
@@ -25,20 +25,20 @@ mekanisme, bukan menambah requirement baru.
 
 ```text
 +-------------+       +------------------+       +------------------+
-| OSM PBF     |  -->  | placeid-build    |  -->  | places.idx       |
+| OSM PBF     |  -->  | nusa-place-build    |  -->  | places.idx       |
 | Indonesia   |       | Rust, batch      |       | + manifest.json  |
 +-------------+       +------------------+       +------------------+
                                                           |
                                                           | mmap read-only
                                                           v
 +-------------+       +------------------+       +------------------+
-| HTTP client |  -->  | placeid-serve    |  -->  | Index reader     |
+| HTTP client |  -->  | nusa-place    |  -->  | Index reader     |
 |             |       | Rust, axum/tokio |       | search, reverse  |
 +-------------+       +------------------+       +------------------+
 ```
 
 Di luar batas: gateway routeid, load balancer, dan sistem monitoring. Gateway
-menangani autentikasi, rate limit, dan TLS. `placeid` hanya melayani HTTP di
+menangani autentikasi, rate limit, dan TLS. `nusapeta-place` hanya melayani HTTP di
 jaringan internal.
 
 ## 3. Stack
@@ -97,8 +97,8 @@ src/
     lookup.rs
     errors.rs
   bin/
-    placeid-build.rs
-    placeid-serve.rs
+    nusa-place-build.rs
+    nusa-place.rs
 ```
 
 `lib.rs` tidak boleh membuka HTTP atau membaca environment. Binary hanya
@@ -327,7 +327,7 @@ koordinat, dan panjang string harus divalidasi.
 
 ## 11. Build dan rilis
 
-- `cargo build --release` menghasilkan `placeid-build` dan `placeid-serve`.
+- `cargo build --release` menghasilkan `nusa-place-build` dan `nusa-place`.
 - Target binary memakai `x86_64-unknown-linux-musl` dan
   `aarch64-unknown-linux-musl` bila memungkinkan.
 - Image container memakai base minimal, user non-root, root filesystem

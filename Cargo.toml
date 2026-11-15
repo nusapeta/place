@@ -1,11 +1,11 @@
 [package]
-name = "placeid"
+name = "nusa-place"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.99"
 license = "MIT"
 description = "Self-hosted OpenStreetMap geocoder for Indonesia"
-repository = "https://github.com/arifsans/placeid"
+repository = "https://github.com/nusapeta/place"
 
 [features]
 default = ["build", "server"]
@@ -50,11 +50,11 @@ tempfile = "3"
 tower = { version = "0.5", features = ["util"] }
 
 [[bin]]
-name = "placeid-build"
-path = "src/bin/placeid-build.rs"
+name = "nusa-place-build"
+path = "src/bin/nusa-place-build.rs"
 required-features = ["build"]
 
 [[bin]]
-name = "placeid-serve"
-path = "src/bin/placeid-serve.rs"
+name = "nusa-place"
+path = "src/bin/nusa-place.rs"
 required-features = ["server"]

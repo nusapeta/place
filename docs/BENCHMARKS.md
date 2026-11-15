@@ -1,4 +1,4 @@
-# Benchmark placeid
+# Benchmark Nusapeta Place
 
 | Field | Value |
 |---|---|
@@ -6,7 +6,7 @@
 | Tanggal | 2026-11-13 |
 | Dokumen terkait | [SRS](SRS.md), [TRD](TRD.md) |
 
-Dokumen ini menetapkan cara mengukur `placeid`. Tujuannya mencegah klaim
+Dokumen ini menetapkan cara mengukur `nusapeta-place`. Tujuannya mencegah klaim
 performa tanpa data dan membuat hasil bisa dibandingkan antar commit.
 
 ## 1. Aturan pelaporan
@@ -67,7 +67,7 @@ uji dan tidak boleh diklaim sebagai alat yang dipakai.
 Ukur dari proses start sampai manifest selesai:
 
 ```text
-/usr/bin/time -v placeid-build \
+/usr/bin/time -v nusa-place-build \
   --input indonesia-latest.osm.pbf \
   --output places.idx \
   --manifest places.idx.json \

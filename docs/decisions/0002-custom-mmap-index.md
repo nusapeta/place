@@ -4,7 +4,7 @@
 |---|---|
 | Status | Accepted untuk v1 |
 | Tanggal | 2026-11-13 |
-| Konteks | placeid v1 |
+| Konteks | Nusapeta Place v1 |
 
 ## Konteks
 

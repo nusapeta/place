@@ -1,4 +1,4 @@
-# PRD: placeid
+# PRD: Nusapeta Place
 
 | Field | Value |
 |---|---|
@@ -10,7 +10,7 @@
 
 ## 1. Ringkasan
 
-`placeid` adalah layanan geocoding mandiri untuk Indonesia yang dibangun dari
+`nusapeta-place` adalah layanan geocoding mandiri untuk Indonesia yang dibangun dari
 OpenStreetMap. Layanan ini menjawab tiga kebutuhan: mencari tempat berdasarkan
 nama, menemukan fitur bernama di sekitar koordinat, dan membuka kembali tempat
 dari identifier yang stabil.

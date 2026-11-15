@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check placeid Markdown for broken links, table shape, dashes, and secrets."""
+"""Check nusapeta-place Markdown for broken links, table shape, dashes, and secrets."""
 
 from __future__ import annotations
 

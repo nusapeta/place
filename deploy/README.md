@@ -1,4 +1,4 @@
-# Deploy placeid
+# Deploy Nusapeta Place
 
 Satu container, satu index Indonesia, read-only. Index tidak dibangun di host
 tujuan: builder butuh RAM ~8,2 GB, sedangkan homelab hanya 7,8 GB total.
@@ -15,33 +15,33 @@ Build dilakukan di mesin lain, lalu hanya artefak rilis yang dikirim.
 ```bash
 # di mesin build
 sha256sum places.idx > places.idx.sha256
-ssh arifsani@192.168.1.219 'mkdir -p ~/Projects/placeid/{data,deploy}'
+ssh arifsani@192.168.1.219 'mkdir -p ~/Projects/place/{data,deploy}'
 rsync -av places.idx places.idx.json places.idx.sha256 \
-  arifsani@192.168.1.219:~/Projects/placeid/data/
-docker save placeid:0.1 | gzip -1 | ssh arifsani@192.168.1.219 'gunzip | docker load'
+  arifsani@192.168.1.219:~/Projects/place/data/
+docker save nusapeta-place:0.1 | gzip -1 | ssh arifsani@192.168.1.219 'gunzip | docker load'
 
 # di host tujuan: checksum wajib sama dengan manifest
-cd ~/Projects/placeid && sha256sum data/places.idx
+cd ~/Projects/place && sha256sum data/places.idx
 ```
 
 Salin juga `docker-compose.yml`, `docker-compose.homelab.yml`, dan `.env` ke
-`~/Projects/placeid/deploy/`. Jangan menyalin direktori `data/` lewat git.
+`~/Projects/place/deploy/`. Jangan menyalin direktori `data/` lewat git.
 
 ## 2. Jalankan
 
 ```bash
-cd ~/Projects/placeid/deploy
+cd ~/Projects/place/deploy
 docker compose up -d          # .env sudah memuat COMPOSE_FILE
 docker compose ps
-docker logs --tail 20 placeid
+docker logs --tail 20 nusapeta-place
 ```
 
 `.env` berisi `COMPOSE_FILE=docker-compose.yml:docker-compose.homelab.yml`.
 Override itu menambahkan service ke jaringan `1panel-network` dengan alias
-`placeid`, jaringan yang sama dengan container `cloudflared-tunnel` milik
+`nusapeta-place`, jaringan yang sama dengan container `cloudflared-tunnel` milik
 1Panel. Tanpa override, ingress tunnel tidak bisa resolve origin.
 
-Compose project diberi nama eksplisit `placeid` (`name:` di bagian atas).
+Compose project diberi nama eksplisit `nusapeta-place` (`name:` di bagian atas).
 Tanpa itu Compose memakai nama direktori `deploy`, sama dengan project routeid
 di host ini.
 
@@ -55,7 +55,7 @@ curl -fsS 127.0.0.1:18092/healthz
 curl -sS '127.0.0.1:18092/search?q=monas&limit=2'
 curl -sS '127.0.0.1:18092/reverse?lat=-6.175392&lon=106.827153'
 curl -sS '127.0.0.1:18092/lookup?osm_ids=N1308678148'
-docker inspect placeid --format '{{.State.Health.Status}}'   # healthy
+docker inspect nusapeta-place --format '{{.State.Health.Status}}'   # healthy
 ```
 
 `/healthz` mengembalikan `manifest_sha256` isi index. Nilai itu harus sama
@@ -91,7 +91,7 @@ punya rule di sana. Yang punya rule adalah `route.arifsani.xyz` menuju
 | Path publik | Diteruskan ke |
 |---|---|
 | `https://route.arifsani.xyz/route` | `routeid` / `routeid-motor` |
-| `https://route.arifsani.xyz/place/*` | `http://placeid:8090` |
+| `https://route.arifsani.xyz/place/*` | `http://nusapeta-place:8090` |
 
 ```bash
 curl -s 'https://route.arifsani.xyz/place/healthz'
@@ -101,7 +101,7 @@ curl -s 'https://route.arifsani.xyz/place/lookup?osm_ids=N1308678148'
 ```
 
 Tidak ada perubahan di repo ini untuk jalur tersebut: cukup container
-`placeid` hidup di `1panel-network` dengan alias `placeid`. Sisi gateway
+`nusapeta-place` hidup di `1panel-network` dengan alias `nusapeta-place`. Sisi gateway
 (flag `-place`, kuota, penutupan `/place/metrics`) didokumentasikan di
 `deploy/README.md` repo routeid.
 
@@ -119,7 +119,7 @@ Batas yang berlaku pada prefix itu:
 | Kuota per IP | 240/menit, burst 40, dijawab `429` + `Retry-After` |
 | `/place/metrics` | `404` (`-block-metrics` di gateway) |
 | `/place` saja | `404`, upstream tidak punya halaman index |
-| `placeid` mati | `/place/*` menjawab `502`; `/healthz` gateway tetap `200` |
+| `nusapeta-place` mati | `/place/*` menjawab `502`; `/healthz` gateway tetap `200` |
 | Path yang dilihat upstream | prefix dibuang, jadi `/place/search` menjadi `/search` |
 
 ### 4.2 Hostname khusus (belum aktif)
@@ -136,7 +136,7 @@ untuk hostname tersebut, jadi jawabannya `404`. Untuk mengaktifkannya:
 2. Di dashboard Cloudflare: **Networking > Tunnels > af067798-... > Routes >
    Add route > Published application**, hostname `place.arifsani.xyz`, service
    URL `http://192.168.1.219:80`. Origin harus IP host (openresty), bukan
-   `placeid:8090`, supaya `/metrics` tetap tertutup vhost, bukan oleh aplikasi.
+   `nusapeta-place:8090`, supaya `/metrics` tetap tertutup vhost, bukan oleh aplikasi.
 
 Langkah 2 butuh dashboard atau token dengan `Cloudflare Tunnel: Edit`. Token
 yang tersedia saat deploy hanya punya `DNS: Edit`, dan seluruh endpoint
@@ -172,9 +172,9 @@ Index immutable per proses. Rilis baru berarti container baru:
 
 ```bash
 rsync -av places.idx places.idx.json places.idx.sha256 \
-  arifsani@192.168.1.219:~/Projects/placeid/data/
+  arifsani@192.168.1.219:~/Projects/place/data/
 ssh arifsani@192.168.1.219 \
-  'cd ~/Projects/placeid/deploy && docker compose up -d --force-recreate'
+  'cd ~/Projects/place/deploy && docker compose up -d --force-recreate'
 ```
 
 Hentikan dulu, jangan menimpa file di bawah proses yang sedang memetakannya.
@@ -200,4 +200,4 @@ data salah.
 | `pids_limit` | 128 | Satu proses Tokio, tanpa fork |
 | `read_only` | ya | Server tidak menulis apa pun |
 | `cap_drop` | ALL | Tidak butuh capability |
-| Log | 10 MB x 3 | `PLACEID_LOG_FORMAT=json` |
+| Log | 10 MB x 3 | `NUSA_PLACE_LOG_FORMAT=json` |

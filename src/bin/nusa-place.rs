@@ -5,8 +5,8 @@ use axum::Router;
 use axum::extract::DefaultBodyLimit;
 use axum::routing::get;
 use clap::Parser;
-use placeid::Index;
-use placeid::api::{self, ApiState};
+use nusa_place::Index;
+use nusa_place::api::{self, ApiState};
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -14,7 +14,7 @@ use tokio::net::TcpListener;
 use tracing_subscriber::EnvFilter;
 
 #[derive(Debug, Parser)]
-#[command(name = "placeid-serve", version, about = "Serve a placeid index")]
+#[command(name = "nusa-place", version, about = "Serve a nusapeta-place index")]
 struct Args {
     /// Index file to map.
     #[arg(long, short)]
@@ -34,7 +34,7 @@ struct Args {
 async fn main() -> Result<()> {
     let args = Args::parse();
     let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
-    if std::env::var("PLACEID_LOG_FORMAT").as_deref() == Ok("json") {
+    if std::env::var("NUSA_PLACE_LOG_FORMAT").as_deref() == Ok("json") {
         tracing_subscriber::fmt()
             .json()
             .with_env_filter(filter)

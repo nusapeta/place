@@ -1,23 +1,23 @@
-# Arsitektur placeid
+# Arsitektur Nusapeta Place
 
 Dokumen ini menunjukkan bentuk sistem dan batas komponen. Requirement ada di
 [SRS](SRS.md); keputusan teknis dan ranking ada di [TRD](TRD.md).
 
 ## 1. Konteks
 
-`placeid` adalah layanan internal di belakang gateway routeid. Klien tidak
+`nusapeta-place` adalah layanan internal di belakang gateway routeid. Klien tidak
 perlu tahu apakah pencarian dilayani router atau geocoder.
 
 ```mermaid
 flowchart LR
     client[Client aplikasi] --> gateway[Gateway routeid]
     gateway --> router[routeid router]
-    gateway --> placeid[placeid serve]
-    placeid --> index[(places.idx)]
-    pbf[(OSM PBF Indonesia)] --> builder[placeid-build]
+    gateway --> nusapeta-place[nusapeta-place serve]
+    nusapeta-place --> index[(places.idx)]
+    pbf[(OSM PBF Indonesia)] --> builder[nusa-place-build]
     builder --> index
     builder --> manifest[(manifest JSON)]
-    manifest --> placeid
+    manifest --> nusapeta-place
 ```
 
 Batas tanggung jawab:
@@ -25,9 +25,9 @@ Batas tanggung jawab:
 | Komponen | Tanggung jawab |
 |---|---|
 | Gateway | TLS, auth, rate limit, routing |
-| `placeid-serve` | Validasi request, pencarian, penyusunan respons |
+| `nusa-place` | Validasi request, pencarian, penyusunan respons |
 | `places.idx` | Data fitur, nama, postings, grid, admin |
-| `placeid-build` | Seleksi PBF, geometri, normalisasi, penulisan index |
+| `nusa-place-build` | Seleksi PBF, geometri, normalisasi, penulisan index |
 | Manifest | Provenance, versi, checksum, jumlah fitur |
 
 ## 2. Container
@@ -35,7 +35,7 @@ Batas tanggung jawab:
 ```mermaid
 flowchart TB
     subgraph Host
-        subgraph Serve[placeid-serve]
+        subgraph Serve[nusa-place]
             HTTP[HTTP layer]
             FWD[Forward search]
             REV[Reverse search]
@@ -66,7 +66,7 @@ stack atau buffer request.
 ```mermaid
 sequenceDiagram
     participant Op as Operator
-    participant B as placeid-build
+    participant B as nusa-place-build
     participant PBF as OSM PBF
     participant Tmp as places.idx.tmp
     participant Out as places.idx
@@ -92,7 +92,7 @@ index setengah jadi.
 sequenceDiagram
     participant C as Client
     participant G as Gateway
-    participant S as placeid-serve
+    participant S as nusa-place
     participant I as Index mmap
     C->>G: GET /search?q=...
     G->>S: proxy request
@@ -112,13 +112,13 @@ Lookup masuk lewat binary search `place_id` atau parse `osm_ids`.
 ```mermaid
 flowchart LR
     subgraph Container
-        BIN[placeid-serve]
+        BIN[nusa-place]
         RO[/places.idx read-only/]
         BIN --- RO
     end
     LB[Gateway] --> BIN
     PROM[Prometheus] -. scrape /metrics .-> BIN
-    OPS[Operator] -. rebuild .-> BUILD[placeid-build]
+    OPS[Operator] -. rebuild .-> BUILD[nusa-place-build]
     BUILD --> VOL[(Volume index)]
     VOL --> RO
 ```

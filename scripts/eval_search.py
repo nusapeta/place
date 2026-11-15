@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Evaluate a running placeid server against a labeled query file."""
+"""Evaluate a running nusapeta-place server against a labeled query file."""
 
 import argparse
 import json

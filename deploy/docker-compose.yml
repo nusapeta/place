@@ -1,4 +1,4 @@
-# Layanan produksi placeid: satu index Indonesia, satu container read-only.
+# Layanan produksi nusapeta-place: satu index Indonesia, satu container read-only.
 #   cd deploy && docker compose up -d
 # Index tidak dibangun di sini; artefak rilis dikirim ke ../data:
 #   places.idx, places.idx.json, places.idx.sha256.
@@ -8,10 +8,10 @@
 #
 # Satu container melayani satu index. Index immutable selama proses hidup:
 # index baru berarti restart (lihat docs/OPERATIONS.md §6).
-name: placeid
+name: nusapeta-place
 
-x-placeid: &placeid
-  image: ${PLACEID_IMAGE:-placeid:0.1}
+x-nusapeta-place: &nusapeta-place
+  image: ${NUSA_PLACE_IMAGE:-nusapeta-place:0.1}
   restart: unless-stopped
   user: "65532:65532"
   read_only: true
@@ -20,7 +20,7 @@ x-placeid: &placeid
     - ../data:/data:ro
   environment:
     RUST_LOG: info
-    PLACEID_LOG_FORMAT: json
+    NUSA_PLACE_LOG_FORMAT: json
   cap_drop:
     - ALL
   security_opt:
@@ -43,9 +43,9 @@ x-placeid: &placeid
       max-file: "3"
 
 services:
-  placeid:
-    <<: *placeid
-    container_name: placeid
+  nusapeta-place:
+    <<: *nusapeta-place
+    container_name: nusapeta-place
     ports:
       # Hanya loopback: jalur publik lewat Cloudflare Tunnel (lihat README),
       # bukan port host. 18090/18091/18093 dipakai layanan lain di homelab.

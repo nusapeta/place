@@ -1,5 +1,5 @@
-use placeid::build::build_data;
-use placeid::writer::write_index;
+use nusa_place::build::build_data;
+use nusa_place::writer::write_index;
 use std::path::Path;
 
 #[test]
@@ -8,7 +8,7 @@ fn mini_fixture_has_expected_features() {
     let (data, report) = build_data(Path::new("tests/fixtures/mini.pbf")).unwrap();
     let path = dir.path().join("mini.idx");
     write_index(&data, &path).unwrap();
-    let index = placeid::Index::open(&path, true).unwrap();
+    let index = nusa_place::Index::open(&path, true).unwrap();
     let mut names: Vec<_> = index
         .places()
         .iter()

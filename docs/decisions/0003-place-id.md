@@ -4,7 +4,7 @@
 |---|---|
 | Status | Accepted |
 | Tanggal | 2026-11-13 |
-| Konteks | placeid v1 |
+| Konteks | Nusapeta Place v1 |
 
 ## Konteks
 
@@ -13,7 +13,7 @@ ID dibuat sebagai nomor urut saat build, ID berubah setiap rebuild. Itu tidak
 cocok dengan nama produk dan membuat cache klien rapuh.
 
 Nominatim memakai `place_id` numerik yang stabil dalam satu database, tetapi
-tidak menjamin arti yang sama setelah impor ulang. `placeid` butuh aturan yang
+tidak menjamin arti yang sama setelah impor ulang. `nusapeta-place` butuh aturan yang
 bisa dihitung ulang dari data OSM.
 
 Kendala lain: banyak klien memparse JSON dengan JavaScript. Angka di atas
@@ -77,6 +77,6 @@ Negatif:
 ## Catatan kompatibilitas
 
 Nominatim punya `place_id` sendiri. Klien yang membawa `place_id` dari
-Nominatim tidak bisa memakainya di `placeid`. Gunakan `osm_type` dan `osm_id`
+Nominatim tidak bisa memakainya di `nusapeta-place`. Gunakan `osm_type` dan `osm_id`
 untuk migrasi, lalu simpan `place_id` baru. Perbedaan ini harus disebut di
 dokumentasi API.

@@ -1,6 +1,6 @@
-# Dokumentasi placeid
+# Dokumentasi Nusapeta Place
 
-Dokumen di direktori ini adalah sumber kontrak dan bukti untuk `placeid`.
+Dokumen di direktori ini adalah sumber kontrak dan bukti untuk `nusapeta-place`.
 Implementasi v1 sudah ada di `src/`; requirement dan format di sini menjadi
 acuan review dan operasi.
 

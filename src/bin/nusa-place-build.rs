@@ -2,15 +2,15 @@
 
 use anyhow::{Context, Result, bail};
 use clap::Parser;
-use placeid::build::build_data;
-use placeid::writer::write_index;
+use nusa_place::build::build_data;
+use nusa_place::writer::write_index;
 use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
 #[command(
-    name = "placeid-build",
+    name = "nusa-place-build",
     version,
-    about = "Build a placeid index from OpenStreetMap PBF"
+    about = "Build a nusapeta-place index from OpenStreetMap PBF"
 )]
 struct Args {
     /// Input OSM PBF file.
@@ -60,12 +60,12 @@ fn main() -> Result<()> {
         summary.admin_count
     );
     if let Some(manifest) = args.manifest {
-        placeid::manifest::write_manifest(&manifest, &args.input, &summary, &report)
+        nusa_place::manifest::write_manifest(&manifest, &args.input, &summary, &report)
             .with_context(|| format!("write manifest {}", manifest.display()))?;
         eprintln!("wrote {}", manifest.display());
     }
     if args.verify {
-        let index = placeid::Index::open(&args.output, true)?;
+        let index = nusa_place::Index::open(&args.output, true)?;
         eprintln!(
             "verified {} features and checksum",
             index.header.feature_count

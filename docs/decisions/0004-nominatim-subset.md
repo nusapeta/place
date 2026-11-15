@@ -4,7 +4,7 @@
 |---|---|
 | Status | Accepted |
 | Tanggal | 2026-11-13 |
-| Konteks | placeid v1 |
+| Konteks | Nusapeta Place v1 |
 
 ## Konteks
 
@@ -14,7 +14,7 @@ berarti mengejar parameter, format, dan perilaku yang tidak dibutuhkan v1.
 
 ## Keputusan
 
-`placeid` menyediakan subset Nominatim `jsonv2`:
+`nusapeta-place` menyediakan subset Nominatim `jsonv2`:
 
 - `GET /search`
 - `GET /reverse`

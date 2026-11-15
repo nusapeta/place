@@ -34,9 +34,9 @@ UEFI dan tidak dipakai pada build Linux.
   `licence` berisi `ODbL 1.0, © OpenStreetMap contributors`, diuji oleh test
   kontrak.
 - Distribusi index atau turunan data OSM harus menyertakan atribusi dan
-  menawarkan database turunan di bawah ODbL. Index `placeid` adalah database
+  menawarkan database turunan di bawah ODbL. Index `nusapeta-place` adalah database
   turunan ODbL.
-- Kode `placeid` berlisensi MIT; file `LICENSE` disertakan di repo.
+- Kode `nusapeta-place` berlisensi MIT; file `LICENSE` disertakan di repo.
 - PBF dari Geofabrik tidak disimpan di repo. Pengguna harus mengunduh sendiri
   dan mematuhi ketentuan Geofabrik serta OSM.
 
@@ -47,7 +47,7 @@ UEFI dan tidak dipakai pada build Linux.
 - 0 vulnerability.
 - 1 warning `RUSTSEC-2026-0186`: `memmap2` 0.5.10, ditarik oleh `osmpbf`
   0.3.8, memiliki validasi kurang pada `advise_range` dan `flush_range`.
-  `placeid` tidak memanggil API tersebut; `release_resident_pages` memakai
+  `nusapeta-place` tidak memanggil API tersebut; `release_resident_pages` memakai
   `libc::madvise` langsung pada slice yang sudah divalidasi. `osmpbf` 0.3.8
   adalah versi terbaru dan belum memakai `memmap2` 0.9. Warning ini diterima
   dengan alasan jalur kode tidak terpanggil dan dipantau saat update

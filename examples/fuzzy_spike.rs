@@ -2,7 +2,7 @@
 
 use fst::automaton::Levenshtein;
 use fst::{Automaton, IntoStreamer, Streamer};
-use placeid::Index;
+use nusa_place::Index;
 use std::collections::HashMap;
 use std::time::Instant;
 

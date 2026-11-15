@@ -1,6 +1,6 @@
 //! Export normalized names and importance for engine spikes.
 
-use placeid::Index;
+use nusa_place::Index;
 use std::io::{BufWriter, Write};
 
 fn main() -> anyhow::Result<()> {

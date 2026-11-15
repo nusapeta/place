@@ -4,7 +4,7 @@
 |---|---|
 | Status | Accepted |
 | Tanggal | 2026-11-13 |
-| Konteks | placeid v1 |
+| Konteks | Nusapeta Place v1 |
 
 ## Konteks
 
@@ -43,7 +43,7 @@ Catatan pengukuran:
 - RSS custom adalah `VmRSS` setelah validasi dan `madvise(MADV_DONTNEED)`, dua
   detik tanpa traffic. RSS SQLite dan Tantivy adalah akhir proses build+query.
 - Top-1 custom 48/50 pada 50 query pertama dan 83/100 pada seluruh set sebelum
-  perbaikan kandidat P4-03. Dengan `PLACEID_WEIGHT_IMPORTANCE=0`, hasil 100
+  perbaikan kandidat P4-03. Dengan `NUSA_PLACE_WEIGHT_IMPORTANCE=0`, hasil 100
   query tetap 83/100, jadi bobot importance tidak mengubah peringkat pada set
   itu.
 - `top-5` custom 88/100 sebelum perbaikan. Sebagian kegagalan berasal dari

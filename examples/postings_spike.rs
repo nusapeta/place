@@ -1,7 +1,7 @@
 //! Compare absolute u32 postings with delta varint encoding.
 
 use fst::Streamer;
-use placeid::Index;
+use nusa_place::Index;
 use std::time::Instant;
 
 fn varint(mut value: u64, out: &mut Vec<u8>) {

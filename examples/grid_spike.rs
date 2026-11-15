@@ -1,6 +1,6 @@
 //! Measure reverse-geocoding cell and candidate counts from a built index.
 
-use placeid::Index;
+use nusa_place::Index;
 
 fn main() -> anyhow::Result<()> {
     let path = std::env::args().nth(1).expect("usage: grid_spike INDEX");

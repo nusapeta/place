@@ -1,4 +1,4 @@
-# Operasi placeid
+# Operasi Nusapeta Place
 
 | Field | Value |
 |---|---|
@@ -35,19 +35,19 @@ cargo build --release
 Binary yang dihasilkan:
 
 ```text
-target/release/placeid-build
-target/release/placeid-serve
+target/release/nusa-place-build
+target/release/nusa-place
 ```
 
 ### 2.2 Jalankan builder
 
 ```bash
-mkdir -p /srv/placeid/releases/2026-11
+mkdir -p /srv/nusapeta-place/releases/2026-11
 
-/usr/bin/time -v target/release/placeid-build \
+/usr/bin/time -v target/release/nusa-place-build \
   --input /data/indonesia-latest.osm.pbf \
-  --output /srv/placeid/releases/2026-11/places.idx \
-  --manifest /srv/placeid/releases/2026-11/places.idx.json \
+  --output /srv/nusapeta-place/releases/2026-11/places.idx \
+  --manifest /srv/nusapeta-place/releases/2026-11/places.idx.json \
   --verify
 ```
 
@@ -57,17 +57,17 @@ proses gagal, index lama tidak tersentuh.
 ### 2.3 Verifikasi
 
 ```bash
-ls -lh /srv/placeid/releases/2026-11/
+ls -lh /srv/nusapeta-place/releases/2026-11/
 jq '.format_version, .counts, .index.sha256' \
-  /srv/placeid/releases/2026-11/places.idx.json
+  /srv/nusapeta-place/releases/2026-11/places.idx.json
 ```
 
 Verifikasi checksum penuh dengan menjalankan server sementara:
 
 ```bash
-target/release/placeid-serve \
-  --index /srv/placeid/releases/2026-11/places.idx \
-  --manifest /srv/placeid/releases/2026-11/places.idx.json \
+target/release/nusa-place \
+  --index /srv/nusapeta-place/releases/2026-11/places.idx \
+  --manifest /srv/nusapeta-place/releases/2026-11/places.idx.json \
   --verify-checksum \
   --bind 127.0.0.1:18090
 ```
@@ -86,15 +86,15 @@ Hentikan server sementara setelah kedua endpoint merespons 200.
 ### 3.1 Container
 
 ```bash
-docker build -t placeid:0.1 .
+docker build -t nusapeta-place:0.1 .
 
 docker run --rm \
-  --name placeid \
+  --name nusapeta-place \
   --read-only \
   --user 65532:65532 \
   -p 127.0.0.1:8090:8090 \
-  -v /srv/placeid/current:/data:ro \
-  placeid:0.1 \
+  -v /srv/nusapeta-place/current:/data:ro \
+  nusapeta-place:0.1 \
   --index /data/places.idx \
   --manifest /data/places.idx.json \
   --bind 0.0.0.0:8090
@@ -116,14 +116,14 @@ Host `arifsani-pc1` memakai Compose, bukan `docker run`. File lengkap ada di
 
 | Item | Nilai |
 |---|---|
-| Project Compose | `placeid` (`name:` eksplisit) |
+| Project Compose | `nusapeta-place` (`name:` eksplisit) |
 | Port host | `127.0.0.1:18092` (loopback, `8090` dipakai `nawasena-pb`) |
-| Alias jaringan | `placeid` di `1panel-network` (jaringan `cloudflared-tunnel`) |
+| Alias jaringan | `nusapeta-place` di `1panel-network` (jaringan `cloudflared-tunnel`) |
 | Batas memori | `256m`, `pids_limit` 128, `cap_drop: ALL` |
-| Artifak | `~/Projects/placeid/data/{places.idx,places.idx.json,places.idx.sha256}` |
+| Artifak | `~/Projects/place/data/{places.idx,places.idx.json,places.idx.sha256}` |
 
 ```bash
-cd ~/Projects/placeid/deploy
+cd ~/Projects/place/deploy
 docker compose up -d            # .env memuat COMPOSE_FILE dengan override homelab
 curl -fsS 127.0.0.1:18092/healthz
 ```
@@ -137,12 +137,12 @@ mencocokkan hostname asli dan hanya `route.arifsani.xyz` yang punya rule:
 
 | Path publik | Diteruskan ke |
 |---|---|
-| `https://route.arifsani.xyz/place/*` | `http://placeid:8090` |
+| `https://route.arifsani.xyz/place/*` | `http://nusapeta-place:8090` |
 | `https://route.arifsani.xyz/route` | `routeid` / `routeid-motor` |
 
 Gateway itu membuang prefix sebelum meneruskan, jadi kontrak `/search`,
 `/reverse`, `/lookup`, dan `/healthz` tidak berubah. Healthcheck gateway tetap
-hanya `/healthz` milik routing: `placeid` yang mati membuat `/place/*`
+hanya `/healthz` milik routing: `nusapeta-place` yang mati membuat `/place/*`
 menjawab `502` tanpa membuat gateway dianggap gagal.
 
 Dua hal yang tidak boleh dilepas:
@@ -163,20 +163,20 @@ dan jalur yang sudah terbukti gagal ada di
 
 ```ini
 [Unit]
-Description=placeid geocoder
+Description=nusapeta-place geocoder
 After=network-online.target
 
 [Service]
-ExecStart=/usr/local/bin/placeid-serve \
-  --index /srv/placeid/current/places.idx \
-  --manifest /srv/placeid/current/places.idx.json \
+ExecStart=/usr/local/bin/nusa-place \
+  --index /srv/nusapeta-place/current/places.idx \
+  --manifest /srv/nusapeta-place/current/places.idx.json \
   --bind 127.0.0.1:8090
 DynamicUser=yes
 ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
 NoNewPrivileges=yes
-ReadOnlyPaths=/srv/placeid
+ReadOnlyPaths=/srv/nusapeta-place
 MemoryMax=512M
 Restart=on-failure
 RestartSec=2
@@ -189,13 +189,13 @@ WantedBy=multi-user.target
 
 | Environment | Flag | Default | Catatan |
 |---|---|---|---|
-| `RUST_LOG` | tidak ada | `info` | Filter `tracing`, misalnya `placeid=debug` |
-| `PLACEID_LOG_FORMAT` | tidak ada | teks | `json` menghasilkan satu objek per baris |
-| `PLACEID_WEIGHT_EXACT` | tidak ada | `3.0` | Bobot ranker |
-| `PLACEID_WEIGHT_PREFIX` | tidak ada | `1.5` | Bobot ranker |
-| `PLACEID_WEIGHT_COVERAGE` | tidak ada | `1.0` | Bobot ranker |
-| `PLACEID_WEIGHT_IMPORTANCE` | tidak ada | `0.5` | Bobot ranker |
-| `PLACEID_WEIGHT_PROXIMITY` | tidak ada | `0.5` | Bobot ranker |
+| `RUST_LOG` | tidak ada | `info` | Filter `tracing`, misalnya `nusapeta-place=debug` |
+| `NUSA_PLACE_LOG_FORMAT` | tidak ada | teks | `json` menghasilkan satu objek per baris |
+| `NUSA_PLACE_WEIGHT_EXACT` | tidak ada | `3.0` | Bobot ranker |
+| `NUSA_PLACE_WEIGHT_PREFIX` | tidak ada | `1.5` | Bobot ranker |
+| `NUSA_PLACE_WEIGHT_COVERAGE` | tidak ada | `1.0` | Bobot ranker |
+| `NUSA_PLACE_WEIGHT_IMPORTANCE` | tidak ada | `0.5` | Bobot ranker |
+| `NUSA_PLACE_WEIGHT_PROXIMITY` | tidak ada | `0.5` | Bobot ranker |
 
 Checksum index divalidasi saat start hanya jika `--verify-checksum`
 diberikan. Flag CLI mengalahkan nilai default; environment hanya mengatur
@@ -214,11 +214,11 @@ Retensi metrik: Prometheus menyimpan 15 hari, resolusi scrape 30 detik.
 Histogram memakai bucket default detik. Jangan menambahkan label query,
 koordinat, atau `place_id` ke metrik; kardinalitas dan privasi dilarang.
 Arsip agregat harian disimpan 90 hari di luar Prometheus. Dashboard ada di
-`ops/grafana-placeid.json`, alert di `ops/prometheus-alerts.yml`.
+`ops/grafana-nusapeta-place.json`, alert di `ops/prometheus-alerts.yml`.
 
 Alert minimum:
 
-- `placeid_requests_total{status=~"5.."}` lebih dari 1% selama 10 menit.
+- `nusa_place_requests_total{status=~"5.."}` lebih dari 1% selama 10 menit.
 - p95 latency di atas target selama 10 menit.
 - Working set container di atas 480 MiB selama 10 menit, mendekati batas container 512 MB. Angka ini mencakup page cache index; beban 20 RPS terukur 150.180 KiB, sedangkan idle 6,1 MiB. NFR-004 mengikat RSS idle, bukan working set saat beban.
 - `/healthz` gagal 3 kali berturut-turut.
@@ -243,10 +243,10 @@ Downtime singkat tidak bisa dihindari pada mode satu replika.
 Promote dan rollback otomatis memakai symlink atomik:
 
 ```bash
-scripts/promote_release.sh /srv/placeid/releases/2026-11 /srv/placeid
-systemctl restart placeid
-scripts/rollback_release.sh /srv/placeid
-systemctl restart placeid
+scripts/promote_release.sh /srv/nusapeta-place/releases/2026-11 /srv/nusapeta-place
+systemctl restart nusapeta-place
+scripts/rollback_release.sh /srv/nusapeta-place
+systemctl restart nusapeta-place
 ```
 
 `promote_release.sh` menolak rilis tanpa `places.idx`, manifest, atau
@@ -262,20 +262,20 @@ restart tetap langkah eksplisit agar operator melihat downtime.
 2. Jalankan build ke direktori rilis baru, bukan menimpa `current`:
 
    ```bash
-   python3 scripts/measure_build.py target/release/placeid-build \
+   python3 scripts/measure_build.py target/release/nusa-place-build \
      --input /data/indonesia-latest.osm.pbf \
-     --output /srv/placeid/releases/2026-11/places.idx \
-     --manifest /srv/placeid/releases/2026-11/places.idx.json \
+     --output /srv/nusapeta-place/releases/2026-11/places.idx \
+     --manifest /srv/nusapeta-place/releases/2026-11/places.idx.json \
      --verify
    ```
 
 3. Buat checksum file dan periksa manifest:
 
    ```bash
-   sha256sum /srv/placeid/releases/2026-11/places.idx \
-     > /srv/placeid/releases/2026-11/places.idx.sha256
+   sha256sum /srv/nusapeta-place/releases/2026-11/places.idx \
+     > /srv/nusapeta-place/releases/2026-11/places.idx.sha256
    jq '.format_version, .counts.features, .counts.skipped_features' \
-     /srv/placeid/releases/2026-11/places.idx.json
+     /srv/nusapeta-place/releases/2026-11/places.idx.json
    ```
 
 4. Jalankan server sementara pada port lain dengan `--verify-checksum`.
@@ -292,8 +292,8 @@ output dan manifest baru; verifikasi checksum dilakukan sebelum promote.
 ## 7. Rollback
 
 ```bash
-ln -sfn /srv/placeid/releases/2026-10 /srv/placeid/current
-systemctl restart placeid
+ln -sfn /srv/nusapeta-place/releases/2026-10 /srv/nusapeta-place/current
+systemctl restart nusapeta-place
 curl -fsS http://127.0.0.1:8090/version
 ```
 
@@ -345,7 +345,7 @@ antar proses.
 - Tidak ada shell di image produksi.
 - Tidak ada koneksi keluar dari server.
 - Batasi port di firewall atau gateway.
-- Rate limit di gateway, bukan di `placeid`.
+- Rate limit di gateway, bukan di `nusapeta-place`.
 - Audit dependency dengan `cargo audit` sebelum rilis.
 - Jangan menaruh token atau kredensial di manifest.
 

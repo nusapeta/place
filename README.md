@@ -1,10 +1,10 @@
-# placeid
+# Nusapeta Place
 
 Geocoder mandiri untuk Indonesia dari OpenStreetMap. Target bentuknya satu
 crate Rust dengan dua binary, builder batch dan server HTTP, satu file index
 `mmap`, dan tanpa service database.
 
-> **English:** placeid is a self-hosted OpenStreetMap geocoder for Indonesia.
+> **English:** Nusapeta Place is a self-hosted OpenStreetMap geocoder for Indonesia.
 > It resolves place names, performs nearest-feature reverse geocoding, and
 > exposes stable place identifiers. The design target is a small operational
 > footprint: one Rust crate with two binaries, one server process, one
@@ -22,13 +22,13 @@ pada mesin uji, bukan target. Catatan rilis:
 export PATH="$HOME/.cargo/bin:$PATH"
 cargo build --release --bins
 
-target/release/placeid-build \
+target/release/nusa-place-build \
   --input data/indonesia-latest.osm.pbf \
   --output /data/places.idx \
   --manifest /data/places.idx.json \
   --verify
 
-target/release/placeid-serve \
+target/release/nusa-place \
   --index /data/places.idx \
   --manifest /data/places.idx.json \
   --bind 127.0.0.1:8090
@@ -63,7 +63,7 @@ cargo clippy --version
 toolchain host yang setara). Tanpa rustup, file pin tidak berlaku dan versi
 sistem bisa berbeda.
 
-Repo: <https://github.com/arifsans/placeid> (private). Clone, issue, commit,
+Repo: <https://github.com/nusapeta/place> (private). Clone, issue, commit,
 dan push memakai GitHub CLI. Alur lengkap ada di
 [CONTRIBUTING.md](CONTRIBUTING.md#repo-dan-github-cli).
 
@@ -75,7 +75,7 @@ memerlukan PostgreSQL, beberapa GB RAM, dan proses impor panjang. Untuk
 kebutuhan yang sempit, yaitu mencari nama tempat, POI, jalan, dan mencari
 fitur terdekat, sebagian besar kapasitas itu tidak terpakai.
 
-`placeid` mengambil batas masalah yang lebih kecil:
+`nusapeta-place` mengambil batas masalah yang lebih kecil:
 
 - Data Indonesia saja pada v1.
 - Nama tempat, POI, jalan, dan wilayah administratif.
@@ -87,7 +87,7 @@ fitur terdekat, sebagian besar kapasitas itu tidak terpakai.
 
 Sensus berikut dijalankan pada 2026-11-13 terhadap extract Indonesia yang
 dipakai routeid, `data/indonesia-latest.osm.pbf`. Angka ini adalah isi korpus,
-bukan hasil index `placeid`.
+bukan hasil index `nusapeta-place`.
 
 | Objek | Total | Bernama | Punya `addr:housenumber` |
 |---|---:|---:|---:|
@@ -135,13 +135,13 @@ occupancy grid ada di
 PBF Indonesia
     |
     v
-placeid-build  (Rust, batch)
+nusa-place-build  (Rust, batch)
     |
     v
 places.idx + places.idx.json
     |
     v
-placeid-serve  (Rust, HTTP, mmap read-only)
+nusa-place  (Rust, HTTP, mmap read-only)
 ```
 
 Index menyimpan record fitur, string asli, token FST, postings, name FST,

@@ -1,51 +1,51 @@
 groups:
-  - name: placeid
+  - name: nusapeta-place
     rules:
-      - alert: PlaceidErrorRate
+      - alert: NusaPlaceErrorRate
         expr: |
-          sum(rate(placeid_requests_total{status=~"5.."}[10m]))
-            / clamp_min(sum(rate(placeid_requests_total[10m])), 1) > 0.01
+          sum(rate(nusa_place_requests_total{status=~"5.."}[10m]))
+            / clamp_min(sum(rate(nusa_place_requests_total[10m])), 1) > 0.01
         for: 10m
         labels:
           severity: page
         annotations:
-          summary: "placeid error rate above 1%"
-      - alert: PlaceidSearchLatency
-        expr: |
-          histogram_quantile(0.95,
-            sum(rate(placeid_request_duration_seconds_bucket{endpoint="search"}[10m])) by (le)) > 0.050
-        for: 10m
-        labels:
-          severity: page
-        annotations:
-          summary: "placeid search p95 above 50 ms"
-      - alert: PlaceidReverseLatency
+          summary: "nusapeta-place error rate above 1%"
+      - alert: NusaPlaceSearchLatency
         expr: |
           histogram_quantile(0.95,
-            sum(rate(placeid_request_duration_seconds_bucket{endpoint="reverse"}[10m])) by (le)) > 0.030
+            sum(rate(nusa_place_request_duration_seconds_bucket{endpoint="search"}[10m])) by (le)) > 0.050
         for: 10m
         labels:
           severity: page
         annotations:
-          summary: "placeid reverse p95 above 30 ms"
-      - alert: PlaceidIndexStale
-        expr: placeid_index_age_seconds > 45 * 24 * 60 * 60
+          summary: "nusapeta-place search p95 above 50 ms"
+      - alert: NusaPlaceReverseLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(nusa_place_request_duration_seconds_bucket{endpoint="reverse"}[10m])) by (le)) > 0.030
+        for: 10m
+        labels:
+          severity: page
+        annotations:
+          summary: "nusapeta-place reverse p95 above 30 ms"
+      - alert: NusaPlaceIndexStale
+        expr: nusa_place_index_age_seconds > 45 * 24 * 60 * 60
         for: 1h
         labels:
           severity: ticket
         annotations:
-          summary: "placeid index older than 45 days"
-      - alert: PlaceidDown
-        expr: up{job="placeid"} == 0
+          summary: "nusapeta-place index older than 45 days"
+      - alert: NusaPlaceDown
+        expr: up{job="nusapeta-place"} == 0
         for: 90s
         labels:
           severity: page
         annotations:
-          summary: "placeid health endpoint is unreachable"
-      - alert: PlaceidMemory
-        expr: container_memory_working_set_bytes{container="placeid"} > 480 * 1024 * 1024
+          summary: "nusapeta-place health endpoint is unreachable"
+      - alert: NusaPlaceMemory
+        expr: container_memory_working_set_bytes{container="nusapeta-place"} > 480 * 1024 * 1024
         for: 10m
         labels:
           severity: ticket
         annotations:
-          summary: "placeid working set above 480 MiB"
+          summary: "nusapeta-place working set above 480 MiB"

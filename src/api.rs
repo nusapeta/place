@@ -51,11 +51,11 @@ impl RankWeights {
     pub fn from_env() -> Self {
         let mut weights = Self::default();
         for (key, value) in [
-            ("PLACEID_WEIGHT_EXACT", &mut weights.exact),
-            ("PLACEID_WEIGHT_PREFIX", &mut weights.prefix),
-            ("PLACEID_WEIGHT_COVERAGE", &mut weights.coverage),
-            ("PLACEID_WEIGHT_IMPORTANCE", &mut weights.importance),
-            ("PLACEID_WEIGHT_PROXIMITY", &mut weights.proximity),
+            ("NUSA_PLACE_WEIGHT_EXACT", &mut weights.exact),
+            ("NUSA_PLACE_WEIGHT_PREFIX", &mut weights.prefix),
+            ("NUSA_PLACE_WEIGHT_COVERAGE", &mut weights.coverage),
+            ("NUSA_PLACE_WEIGHT_IMPORTANCE", &mut weights.importance),
+            ("NUSA_PLACE_WEIGHT_PROXIMITY", &mut weights.proximity),
         ] {
             if let Ok(parsed) = std::env::var(key).unwrap_or_default().parse::<f64>()
                 && parsed.is_finite()
@@ -153,9 +153,9 @@ pub async fn middleware(request: Request, next: Next) -> Response {
             HeaderValue::from_static("application/json; charset=utf-8"),
         );
     }
-    metrics::counter!("placeid_requests_total", "endpoint" => endpoint.clone(), "status" => status.clone())
+    metrics::counter!("nusa_place_requests_total", "endpoint" => endpoint.clone(), "status" => status.clone())
         .increment(1);
-    metrics::histogram!("placeid_request_duration_seconds", "endpoint" => endpoint.clone())
+    metrics::histogram!("nusa_place_request_duration_seconds", "endpoint" => endpoint.clone())
         .record(elapsed);
     tracing::info!(
         request_id = %request_id,
@@ -220,7 +220,7 @@ pub async fn version(State(state): State<ApiState>) -> impl IntoResponse {
         ),
     };
     Json(json!({
-        "server": format!("placeid-serve {}", env!("CARGO_PKG_VERSION")),
+        "server": format!("nusa-place {}", env!("CARGO_PKG_VERSION")),
         "api": "v1",
         "format_version": FORMAT_VERSION,
         "builder": builder,
@@ -231,8 +231,8 @@ pub async fn version(State(state): State<ApiState>) -> impl IntoResponse {
 }
 
 pub async fn metrics_handler(State(state): State<ApiState>) -> Response {
-    metrics::gauge!("placeid_index_size_bytes").set(state.index_bytes as f64);
-    metrics::gauge!("placeid_index_features").set(f64::from(state.index.header.feature_count));
+    metrics::gauge!("nusa_place_index_size_bytes").set(state.index_bytes as f64);
+    metrics::gauge!("nusa_place_index_features").set(f64::from(state.index.header.feature_count));
     if let Some(manifest) = &state.manifest
         && let Ok(built_at) = time::OffsetDateTime::parse(
             &manifest.built_at,
@@ -242,7 +242,7 @@ pub async fn metrics_handler(State(state): State<ApiState>) -> Response {
         let age = (time::OffsetDateTime::now_utc() - built_at)
             .whole_seconds()
             .max(0);
-        metrics::gauge!("placeid_index_age_seconds").set(age as f64);
+        metrics::gauge!("nusa_place_index_age_seconds").set(age as f64);
     }
     let body = state.metrics.render();
     (
@@ -304,7 +304,7 @@ pub async fn search(
         .into_iter()
         .map(|row| result_json(&state.index, row, addressdetails, &language))
         .collect();
-    metrics::counter!("placeid_results_total", "endpoint" => "search")
+    metrics::counter!("nusa_place_results_total", "endpoint" => "search")
         .increment(results.len() as u64);
     Ok(Json(results))
 }
@@ -336,7 +336,7 @@ pub async fn reverse(
     let Some(row) = row else {
         return Err(ApiError::not_found("no feature within radius"));
     };
-    metrics::counter!("placeid_results_total", "endpoint" => "reverse").increment(1);
+    metrics::counter!("nusa_place_results_total", "endpoint" => "reverse").increment(1);
     Ok(Json(result_json(
         &state.index,
         row,
@@ -410,7 +410,7 @@ pub async fn lookup(
             results.push(result_json(&state.index, row, addressdetails, &language));
         }
     }
-    metrics::counter!("placeid_results_total", "endpoint" => "lookup")
+    metrics::counter!("nusa_place_results_total", "endpoint" => "lookup")
         .increment(results.len() as u64);
     Ok(Json(results))
 }
@@ -612,7 +612,7 @@ fn select_candidates(
         }
     }
     merge_rows(&mut rows, &prefix_rows);
-    metrics::histogram!("placeid_search_candidates").record(rows.len() as f64);
+    metrics::histogram!("nusa_place_search_candidates").record(rows.len() as f64);
 
     let wants_regency = normalized.starts_with("kabupaten ");
     let total_features = f64::from(index.header.feature_count.max(1));

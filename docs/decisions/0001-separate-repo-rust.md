@@ -4,7 +4,7 @@
 |---|---|
 | Status | Accepted |
 | Tanggal | 2026-11-13 |
-| Konteks | placeid v1 |
+| Konteks | Nusapeta Place v1 |
 
 ## Konteks
 
@@ -15,7 +15,7 @@ CI, dependency, dan rilis saling mengunci.
 
 ## Keputusan
 
-- `placeid` berada di repo terpisah.
+- `nusapeta-place` berada di repo terpisah.
 - Implementasi memakai Rust, bukan Go.
 - Integrasi dengan routeid lewat HTTP, bukan FFI atau cgo.
 - Tidak ada kode yang dibagi antar repo. Kontraknya adalah API dan format
@@ -48,6 +48,6 @@ Negatif:
 
 ## Tinjau ulang
 
-Jika routeid dan placeid akhirnya selalu dirilis bersamaan dan kontrak HTTP
+Jika routeid dan Nusapeta Place akhirnya selalu dirilis bersamaan dan kontrak HTTP
 menjadi beban, monorepo bisa dipertimbangkan. Sampai itu terjadi, repo
 terpisah adalah default.

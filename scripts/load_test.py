@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fixed-rate mixed load test for a running placeid server."""
+"""Fixed-rate mixed load test for a running nusapeta-place server."""
 
 import argparse
 import http.client

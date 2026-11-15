@@ -1,4 +1,4 @@
-# SRS: placeid
+# SRS: Nusapeta Place
 
 | Field | Value |
 |---|---|
@@ -10,7 +10,7 @@
 
 ## 1. Tujuan dan ruang lingkup
 
-Dokumen ini menetapkan perilaku `placeid` yang bisa diuji. Fokusnya adalah
+Dokumen ini menetapkan perilaku `nusapeta-place` yang bisa diuji. Fokusnya adalah
 batas sistem, requirement fungsional, requirement nonfungsional, antarmuka
 eksternal, dan cara memverifikasi bahwa requirement terpenuhi.
 
@@ -33,18 +33,18 @@ alasan yang dicatat. `MAY` berarti opsional.
 | Lookup | Pengambilan fitur berdasarkan identifier |
 | Index | File `places.idx` yang dipetakan read-only oleh server |
 | Manifest | File JSON berisi provenance, versi, jumlah, dan checksum |
-| Builder | Binary `placeid-build` yang mengubah PBF menjadi index |
-| Server | Binary `placeid-serve` yang melayani HTTP |
+| Builder | Binary `nusa-place-build` yang mengubah PBF menjadi index |
+| Server | Binary `nusa-place` yang melayani HTTP |
 | Admin hierarchy | Rantai wilayah administratif dari fitur ke parent |
 | `place_id` | Identifier 53-bit turunan `(osm_type, osm_id)` |
 
 ## 3. Konteks sistem
 
 ```text
-OSM PBF  ->  placeid-build  ->  places.idx + manifest
+OSM PBF  ->  nusa-place-build  ->  places.idx + manifest
                                       |
                                       v
-Client  ->  HTTP  ->  placeid-serve  ->  mmap index
+Client  ->  HTTP  ->  nusa-place  ->  mmap index
 ```
 
 Server tidak membaca PBF, tidak menulis index, dan tidak memerlukan database.
@@ -346,9 +346,9 @@ Acceptance:
 | File index | [INDEX-FORMAT.md](INDEX-FORMAT.md) |
 | Manifest | JSON, field di FR-013 |
 | Input PBF | `*.osm.pbf` dari Geofabrik atau ekstraksi Indonesia |
-| CLI builder | `placeid-build --input <path> --output <path> --manifest <path>` |
-| CLI server | `placeid-serve --index <path> --bind <host:port>` |
-| Environment | `PLACEID_INDEX`, `PLACEID_ADDR`, `PLACEID_LOG`, `PLACEID_MAX_CONCURRENCY` |
+| CLI builder | `nusa-place-build --input <path> --output <path> --manifest <path>` |
+| CLI server | `nusa-place --index <path> --bind <host:port>` |
+| Environment | `NUSA_PLACE_INDEX`, `NUSA_PLACE_ADDR`, `NUSA_PLACE_LOG`, `NUSA_PLACE_MAX_CONCURRENCY` |
 | Metrik | Format teks Prometheus |
 
 Nama CLI dan environment adalah target kontrak v1. Implementasi belum ada.

@@ -1,4 +1,4 @@
-# API placeid
+# API Nusapeta Place
 
 | Field | Value |
 |---|---|
@@ -225,10 +225,10 @@ index belum siap. Endpoint ini tidak melakukan pencarian.
 
 ```json
 {
-  "server": "placeid-serve 0.1.0",
+  "server": "nusa-place 0.1.0",
   "api": "v1",
   "format_version": 1,
-  "builder": "placeid-build 0.1.0",
+  "builder": "nusa-place-build 0.1.0",
   "pbf_sha256": "def456...",
   "index_sha256": "abc123...",
   "built_at": "2026-11-13T00:00:00Z"
@@ -241,11 +241,11 @@ Format teks Prometheus. Metrik minimum:
 
 | Metrik | Tipe | Label |
 |---|---|---|
-| `placeid_requests_total` | counter | `endpoint`, `status` |
-| `placeid_request_duration_seconds` | histogram | `endpoint` |
-| `placeid_results_total` | counter | `endpoint` |
-| `placeid_index_size_bytes` | gauge | |
-| `placeid_index_features` | gauge | |
+| `nusa_place_requests_total` | counter | `endpoint`, `status` |
+| `nusa_place_request_duration_seconds` | histogram | `endpoint` |
+| `nusa_place_results_total` | counter | `endpoint` |
+| `nusa_place_index_size_bytes` | gauge | |
+| `nusa_place_index_features` | gauge | |
 
 Tidak ada label `q`, `lat`, `lon`, atau `place_id`.
 
@@ -276,7 +276,7 @@ Header `X-Request-ID` selalu dikembalikan. Untuk 429 dan 503, sertakan
 
 ## 9. Kompatibilitas Nominatim
 
-| Fitur Nominatim | placeid v1 |
+| Fitur Nominatim | Nusapeta Place v1 |
 |---|---|
 | `format=jsonv2` | Didukung |
 | `q`, `limit`, `lat`, `lon`, `viewbox`, `bounded` | Didukung dengan batas |
@@ -292,7 +292,7 @@ Header `X-Request-ID` selalu dikembalikan. Untuk 429 dan 503, sertakan
 | `/status` | Tidak ada; gunakan `/healthz` dan `/version` |
 | `/deletable` | Tidak ada |
 
-Field respons yang tidak ada di `placeid` tidak boleh dianggap kosong secara
+Field respons yang tidak ada di `nusapeta-place` tidak boleh dianggap kosong secara
 implisit. Klien harus memeriksa field yang dipakai.
 
 ## 10. Atribusi dan lisensi
@@ -304,7 +304,7 @@ licence: "ODbL 1.0, © OpenStreetMap contributors"
 ```
 
 Atribusi juga wajib terlihat di dokumentasi dan UI yang menampilkan hasil.
-Data OSM berlisensi ODbL 1.0. Kode `placeid` berlisensi MIT.
+Data OSM berlisensi ODbL 1.0. Kode `nusapeta-place` berlisensi MIT.
 
 ## 11. Batas dan versi
 

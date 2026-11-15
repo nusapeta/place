@@ -1,4 +1,4 @@
-# Backlog placeid
+# Backlog Nusapeta Place
 
 | Field | Value |
 |---|---|
@@ -58,7 +58,7 @@ dibekukan.
 
 | ID | Pekerjaan | Acceptance | Dep | Ukuran | Ref |
 |---|---|---|---|---|---|
-| P0-01 | Inisialisasi git, remote, dan commit baseline dokumen, verifikasi `.gitignore` menolak PBF, index, dan hasil benchmark | `git status` bersih setelah commit; `origin` menunjuk `arifsans/placeid`; commit baseline terdorong; `git check-ignore` menolak `*.osm.pbf`, `*.idx`, `*.idx.json`, `bench-results/` | - | S | CONTRIBUTING |
+| P0-01 | Inisialisasi git, remote, dan commit baseline dokumen, verifikasi `.gitignore` menolak PBF, index, dan hasil benchmark | `git status` bersih setelah commit; `origin` menunjuk `arifsans/nusapeta-place`; commit baseline terdorong; `git check-ignore` menolak `*.osm.pbf`, `*.idx`, `*.idx.json`, `bench-results/` | - | S | CONTRIBUTING |
 | P0-02 | Audit konsistensi dokumen: requirement `MUST` yang bertentangan, tautan relatif mati, label target vs hasil, em dash | Skrip pemeriksa tautan lulus; daftar konflik requirement kosong; tidak ada em dash di dokumen | P0-01 | M | ROADMAP Fase 0 |
 | P0-03 | Pin toolchain: `rust-toolchain.toml`, komponen `rustfmt` dan `clippy`, catat versi di README | `rustup show` memakai versi yang dipin; `cargo fmt --version` dan `cargo clippy --version` tersedia; versi Rust tercatat | P0-01 | S | TRD §11 |
 | P0-04 | CI dasar: fmt, clippy, test, `cargo audit`, pemeriksa tautan, larangan file data besar | CI lulus pada commit dokumen; job cargo ditandai skipped sampai crate ada di P1-10; job gagal jika PBF atau index masuk repo | P0-03 | M | CONTRIBUTING |
@@ -83,7 +83,7 @@ dibuang, hasilnya masuk ke dokumen riset atau ADR.
 | P1-07 | Keputusan encoding postings: `u32` tetap atau delta varint | Ukuran dan latency kedua encoding diukur; format v1 diperbarui; decoder punya test batas | P1-03 | M | INDEX-FORMAT §9 |
 | P1-08 | Keputusan grid: dense vs sparse, ukuran sel 0,01, 0,02, atau 0,05 derajat, ring search | Occupancy dan biaya byte diukur; radius 1 km dan 10 km punya jumlah sel dan kandidat terukur; INDEX-FORMAT diperbarui | P1-01, P1-03 | M | FR-007, INDEX-FORMAT §11 |
 | P1-09 | Keputusan sumber `importance`: tag OSM saja atau tabel Wikipedia/Wikidata | Top-1 pada 100 query dengan dan tanpa tabel eksternal; biaya ukuran dan lisensi dicatat; ADR jika memakai data eksternal | P1-01 | M | FR-006, NFR-013 |
-| P1-10 | Scaffold crate sesuai TRD: `lib.rs`, modul build/index/search/api, dua binary, feature gate | `cargo build --release` menghasilkan `placeid-build` dan `placeid-serve`; `lib.rs` tidak membuka HTTP atau environment | P0-03 | M | TRD §4 |
+| P1-10 | Scaffold crate sesuai TRD: `lib.rs`, modul build/index/search/api, dua binary, feature gate | `cargo build --release` menghasilkan `nusa-place-build` dan `nusa-place`; `lib.rs` tidak membuka HTTP atau environment | P0-03 | M | TRD §4 |
 | P1-11 | Writer dan reader format v1: header, section table, places, strings, dictionary, postings, trailer | Fixture kecil ditulis, dibaca ulang, dan nilainya sama; section align 8 byte; dua build fixture identik | P1-04, P1-05, P1-06, P1-07, P1-08, P1-10 | L | FR-001, FR-013, FR-014 |
 | P1-12 | Validator index dan suite fixture rusak | 14 aturan validasi INDEX-FORMAT §16 punya test negatif; fuzz parser tidak menemukan panic | P1-11 | M | NFR-008 |
 | P1-13 | `place_id` encode/decode dan batas 53-bit | Test untuk node, way, relation, `osm_id = 2^51 - 1`, overflow, dan dua build stabil | P1-10 | S | FR-003, ADR 0003 |

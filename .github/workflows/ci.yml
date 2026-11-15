@@ -72,7 +72,7 @@ jobs:
       # Build and smoke only: runtime under QEMU is not a performance claim
       # for NFR-007.
       - name: Build arm64 image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/arm64

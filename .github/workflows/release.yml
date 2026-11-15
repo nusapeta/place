@@ -27,7 +27,7 @@ jobs:
       # Build through the Dockerfile so release binaries match the image.
       # QEMU is build-only; runtime performance is not a claim.
       - name: Build rootfs
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: ${{ matrix.platform }}
@@ -85,7 +85,7 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64,linux/arm64

@@ -31,7 +31,7 @@ curl -s 'http://127.0.0.1:8090/healthz' | jq
 The release checksum covers the whole file. The manifest's `index.sha256`
 covers the index body without its 32-byte trailer; `--verify-checksum` validates
 the trailer. Do not compare the manifest digest with `sha256sum` output. See
-[`../releases/0.1.0.md`](../releases/0.1.0.md).
+[`../releases/v0.1.0.md`](../releases/v0.1.0.md).
 
 The index is 142 MB. The container runs as UID 65532 with the index volume
 read-only.

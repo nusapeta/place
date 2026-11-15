@@ -24,7 +24,7 @@ acuan review dan operasi.
 15. [research/P4-EVIDENCE](research/P4-EVIDENCE.md): relevance, reverse, beban,
     dan release drill.
 16. [research/NFR-REVIEW](research/NFR-REVIEW.md): status gate NFR.
-17. [releases/0.1.0](releases/0.1.0.md): catatan rilis v1.
+17. [releases/v0.1.0](releases/v0.1.0.md): catatan rilis v1.
 
 ## Status dokumen
 

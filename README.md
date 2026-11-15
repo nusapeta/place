@@ -54,7 +54,7 @@ curl 'http://127.0.0.1:8090/healthz'
 The index checksum has two forms. The release `.sha256` covers the whole file
 (`a732b4ec…836d`). The manifest's `index.sha256` covers the index body without
 its 32-byte trailer (`0df44207…2bca`); `--verify-checksum` checks that trailer.
-See [`docs/releases/0.1.0.md`](docs/releases/0.1.0.md).
+See [`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md).
 
 **Read more:** [what it solves](#what-it-solves) · [measured
 corpus](#measured-corpus) · [scope](#scope-v1) · [technical
@@ -216,7 +216,7 @@ engine only.
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | phases and exit criteria |
 | [`docs/research/`](docs/research/) | method research and evidence |
 | [`deploy/README.md`](deploy/README.md) | container, Compose, tunnel, rollback |
-| [`docs/releases/0.1.0.md`](docs/releases/0.1.0.md) | release notes |
+| [`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md) | release notes |
 
 The document index and change rules are in [`docs/README.md`](docs/README.md).
 

@@ -16,7 +16,7 @@ Status: **v1 kandidat rilis**. Builder, server, format index, dataset uji,
 container, metrik, alert, dan prosedur promote/rollback sudah ada. Angka
 performa di [docs/BENCHMARKS.md](docs/BENCHMARKS.md) adalah hasil pengukuran
 pada mesin uji, bukan target. Catatan rilis:
-[docs/releases/0.1.0.md](docs/releases/0.1.0.md).
+[docs/releases/v0.1.0.md](docs/releases/v0.1.0.md).
 
 ## Mulai cepat
 
@@ -174,7 +174,7 @@ kontrak ada di [docs/INDEX-FORMAT.md](docs/INDEX-FORMAT.md) dan
 | [docs/research/NFR-REVIEW.md](docs/research/NFR-REVIEW.md) | Status gate NFR |
 | [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) | Lisensi, audit, dan atribusi |
 | [deploy/README.md](deploy/README.md) | Deploy container, Compose homelab, tunnel, update, rollback |
-| [docs/releases/0.1.0.md](docs/releases/0.1.0.md) | Catatan rilis |
+| [docs/releases/v0.1.0.md](docs/releases/v0.1.0.md) | Catatan rilis |
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | Istilah teknis yang dipakai di repo |
 | [docs/decisions/](docs/decisions/) | Architecture Decision Records |
 

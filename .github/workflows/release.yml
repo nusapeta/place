@@ -55,6 +55,7 @@ jobs:
     needs: binaries
     runs-on: ubuntu-24.04
     steps:
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
           pattern: binaries-*
@@ -65,7 +66,9 @@ jobs:
       - uses: softprops/action-gh-release@v3
         with:
           files: dist/*
-          generate_release_notes: true
+          # The repository history is not a release note: the first tag would
+          # list every commit ever made. This file is written for readers.
+          body_path: docs/releases/0.1.0.en.md
 
   image:
     runs-on: ubuntu-24.04

@@ -75,6 +75,7 @@ async fn main() -> Result<()> {
     };
     let app = Router::new()
         .route("/search", get(api::search))
+        .route("/place/suggest", get(api::suggest))
         .route("/reverse", get(api::reverse))
         .route("/place/admin/reverse", get(api::admin_reverse))
         .route("/lookup", get(api::lookup))

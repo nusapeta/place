@@ -57,8 +57,8 @@ impl GridInfo {
     }
 
     pub fn max_lon_e7(&self) -> i32 {
-        let value = i64::from(self.min_lon_e7)
-            + i64::from(self.cols) * i64::from(self.cell_size_e7);
+        let value =
+            i64::from(self.min_lon_e7) + i64::from(self.cols) * i64::from(self.cell_size_e7);
         value.clamp(i64::from(i32::MIN), i64::from(i32::MAX)) as i32
     }
 }
@@ -339,7 +339,9 @@ impl Index {
         for _ in 0..ring_count {
             let points = get_u32(bytes, position) as usize;
             position += 4;
-            rings.push(bytemuck::cast_slice(&bytes[position..position + points * 4]));
+            rings.push(bytemuck::cast_slice(
+                &bytes[position..position + points * 4],
+            ));
             position += points * 4;
         }
         debug_assert_eq!(position, end);
@@ -778,7 +780,10 @@ impl Index {
                 return invalid("way_lines point count must be even and at least two points");
             }
             let base = directory_end + offset;
-            if base.checked_add(points * 4).is_none_or(|end| end > bytes.len()) {
+            if base
+                .checked_add(points * 4)
+                .is_none_or(|end| end > bytes.len())
+            {
                 return invalid("way_lines polyline out of range");
             }
         }

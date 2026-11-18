@@ -319,11 +319,7 @@ fn admin_reverse_returns_hierarchy_and_errors() {
         "Gambir Village, Gambir, Jakarta Pusat, Daerah Khusus Jakarta, Indonesia"
     );
 
-    let missing = request(
-        port,
-        "GET",
-        "/place/admin/reverse?lat=-7.0&lon=107.0",
-    );
+    let missing = request(port, "GET", "/place/admin/reverse?lat=-7.0&lon=107.0");
     assert_eq!(missing.status, 404);
     assert_eq!(missing.json()["error"], "not_found");
 

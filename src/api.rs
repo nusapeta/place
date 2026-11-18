@@ -383,7 +383,11 @@ pub async fn admin_reverse(
         return Err(ApiError::not_found("no admin area contains the point"));
     }
 
-    let deepest = containing.iter().map(|(_, level)| *level).max().unwrap_or(0);
+    let deepest = containing
+        .iter()
+        .map(|(_, level)| *level)
+        .max()
+        .unwrap_or(0);
     let selected = containing
         .iter()
         .filter(|(_, level)| *level == deepest)
@@ -415,7 +419,10 @@ pub async fn admin_reverse(
         guard += 1;
     }
     parts.push("Indonesia".to_string());
-    address.insert("country".to_string(), Value::String("Indonesia".to_string()));
+    address.insert(
+        "country".to_string(),
+        Value::String("Indonesia".to_string()),
+    );
     address.insert("country_code".to_string(), Value::String("id".to_string()));
 
     let place_id = state
@@ -433,8 +440,7 @@ pub async fn admin_reverse(
         })
         .unwrap_or((coordinate(point.0), coordinate(point.1)));
 
-    metrics::counter!("nusa_place_results_total", "endpoint" => "admin_reverse")
-        .increment(1);
+    metrics::counter!("nusa_place_results_total", "endpoint" => "admin_reverse").increment(1);
     Ok(Json(json!({
         "place_id": place_id,
         "licence": LICENCE,
@@ -993,9 +999,10 @@ fn point_in_ring(point: (i32, i32), ring: &[i32]) -> bool {
             f64::from(ring[previous * 2 + 1]),
         );
         if (current_lat > lat) != (previous_lat > lat)
-            && lon < previous_lon
-                + (lat - current_lat) * (previous_lon - current_lon)
-                    / (previous_lat - current_lat)
+            && lon
+                < previous_lon
+                    + (lat - current_lat) * (previous_lon - current_lon)
+                        / (previous_lat - current_lat)
         {
             inside = !inside;
         }
@@ -1008,11 +1015,7 @@ fn point_in_polygon(point: (i32, i32), rings: &[&[i32]]) -> bool {
     let Some(outer) = rings.first() else {
         return false;
     };
-    point_in_ring(point, outer)
-        && !rings
-            .iter()
-            .skip(1)
-            .any(|hole| point_in_ring(point, hole))
+    point_in_ring(point, outer) && !rings.iter().skip(1).any(|hole| point_in_ring(point, hole))
 }
 
 fn admin_address_key(level: u8) -> Option<&'static str> {
@@ -1249,9 +1252,11 @@ mod tests {
             .filter_map(|admin_id| index.admin_polygon(admin_id))
             .collect();
         assert_eq!(polygons.len(), index.header.admin_count as usize);
-        assert!(polygons
-            .iter()
-            .all(|polygon| !polygon.rings.is_empty() && polygon.rings[0].len() >= 6));
+        assert!(
+            polygons
+                .iter()
+                .all(|polygon| !polygon.rings.is_empty() && polygon.rings[0].len() >= 6)
+        );
     }
 
     #[test]

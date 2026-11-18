@@ -26,6 +26,7 @@ dikirim sebagai angka.
 |---|---|---|
 | GET | `/search` | Forward search berdasarkan nama |
 | GET | `/reverse` | Fitur terdekat dari koordinat |
+| GET | `/place/admin/reverse` | Admin area terdalam dari koordinat |
 | GET | `/lookup` | Ambil fitur berdasarkan ID |
 | GET | `/healthz` | Status index dan kesiapan server |
 | GET | `/version` | Versi server dan manifest |
@@ -126,8 +127,10 @@ bukan data hasil build.
 
 - Mengembalikan satu objek fitur terdekat di dalam radius.
 - Jika tidak ada fitur, mengembalikan 404 dengan `error=not_found`.
-- Jarak dihitung dengan haversine. Prioritas jenis hanya dipakai saat selisih
-  jarak kurang dari 25 meter.
+- Jarak ke fitur memakai geometri polyline untuk jalan panjang. Untuk fitur
+  lain, jarak memakai haversine ke centroid. Prioritas jenis hanya dipakai saat
+  selisih jarak kurang dari 25 meter.
+- Field `distance_m` berisi jarak dalam meter, dibulatkan ke 0,1 meter.
 - Tidak ada interpolasi nomor rumah.
 
 ### 5.3 Contoh
@@ -160,9 +163,67 @@ GET /reverse?lat=-7.7956&lon=110.3695&radius=500&addressdetails=1
 }
 ```
 
-## 6. `GET /lookup`
+## 6. `GET /place/admin/reverse`
 
 ### 6.1 Parameter
+
+| Parameter | Wajib | Rentang | Default | Catatan |
+|---|---|---|---|---|
+| `lat` | Ya | -90..90 | | Lintang |
+| `lon` | Ya | -180..180 | | Bujur |
+
+Endpoint ini selalu mengembalikan objek `address`. Parameter
+`addressdetails` tidak mengubah respons.
+
+### 6.2 Perilaku
+
+- Mengembalikan admin area terdalam yang polygonnya mengandung titik.
+- Hierarchy diambil dari `parent_id` admin, bukan dari jarak ke centroid.
+- `display_name` berisi nama admin dari terdalam ke provinsi lalu `Indonesia`.
+- `address` memakai `village` untuk level 7, `county` untuk level 6, `city`
+  untuk level 5, dan `state` untuk level 4.
+- `ambiguous` bernilai `true` saat lebih dari satu polygon pada level terdalam
+  mengandung titik. Pilihan deterministik memakai `admin_id` terkecil.
+- Polygon administrator berlaku sebagai hole bila berada setelah outer ring.
+- 404 jika tidak ada polygon yang mengandung titik.
+- 501 dengan `error=no_admin_polygons` jika index tidak memuat section polygon.
+
+### 6.3 Contoh
+
+```http
+GET /place/admin/reverse?lat=-6.195&lon=106.815
+```
+
+```json
+{
+  "place_id": 1351079888221220,
+  "licence": "ODbL 1.0, © OpenStreetMap contributors",
+  "osm_type": "relation",
+  "osm_id": 1003,
+  "lat": "-6.1950000",
+  "lon": "106.8150000",
+  "class": "boundary",
+  "type": "administrative",
+  "name": "Gambir Village",
+  "display_name": "Gambir Village, Gambir, Jakarta Pusat, Daerah Khusus Jakarta, Indonesia",
+  "address": {
+    "village": "Gambir Village",
+    "county": "Gambir",
+    "city": "Jakarta Pusat",
+    "state": "Daerah Khusus Jakarta",
+    "country": "Indonesia",
+    "country_code": "id"
+  },
+  "admin_id": 4,
+  "ambiguous": false
+}
+```
+
+Contoh di atas memakai fixture `tests/fixtures/mini.pbf`, bukan data produksi.
+
+## 7. `GET /lookup`
+
+### 7.1 Parameter
 
 | Parameter | Wajib | Rentang | Catatan |
 |---|---|---|---|
@@ -173,14 +234,14 @@ GET /reverse?lat=-7.7956&lon=110.3695&radius=500&addressdetails=1
 Hanya satu dari `osm_ids` atau `place_ids` yang boleh dikirim. Jika keduanya
 dikirim, server mengembalikan 400.
 
-### 6.2 Perilaku
+### 7.2 Perilaku
 
 - Hasil berupa array, hanya ID yang ditemukan.
 - Urutan hasil mengikuti urutan permintaan.
 - ID yang tidak ditemukan dihilangkan, bukan menghasilkan error.
 - Awalan `N`, `W`, `R` tidak peka huruf besar/kecil.
 
-### 6.3 Contoh
+### 7.3 Contoh
 
 ```http
 GET /lookup?osm_ids=N123,W456&addressdetails=0
@@ -205,15 +266,15 @@ GET /lookup?osm_ids=N123,W456&addressdetails=0
 ]
 ```
 
-## 7. Endpoint operasional
+## 8. Endpoint operasional
 
-### 7.1 `/healthz`
+### 8.1 `/healthz`
 
 ```json
 {
   "status": "ok",
   "index": "places.idx",
-  "format_version": 1,
+  "format_version": 2,
   "manifest_sha256": "abc123..."
 }
 ```
@@ -221,13 +282,13 @@ GET /lookup?osm_ids=N123,W456&addressdetails=0
 Status 200 hanya jika index sudah termap dan header valid. Status 503 jika
 index belum siap. Endpoint ini tidak melakukan pencarian.
 
-### 7.2 `/version`
+### 8.2 `/version`
 
 ```json
 {
   "server": "nusa-place 0.1.0",
   "api": "v1",
-  "format_version": 1,
+  "format_version": 2,
   "builder": "nusa-place-build 0.1.0",
   "pbf_sha256": "def456...",
   "index_sha256": "abc123...",
@@ -235,7 +296,7 @@ index belum siap. Endpoint ini tidak melakukan pencarian.
 }
 ```
 
-### 7.3 `/metrics`
+### 8.3 `/metrics`
 
 Format teks Prometheus. Metrik minimum:
 
@@ -249,7 +310,7 @@ Format teks Prometheus. Metrik minimum:
 
 Tidak ada label `q`, `lat`, `lon`, atau `place_id`.
 
-## 8. Error
+## 9. Error
 
 Format:
 
@@ -265,6 +326,7 @@ Format:
 | 400 | `invalid_request` | Parameter hilang, tipe salah, di luar rentang |
 | 400 | `unsupported_parameter` | Parameter dikenal tetapi tidak didukung |
 | 404 | `not_found` | Reverse tidak menemukan fitur |
+| 501 | `no_admin_polygons` | Index tidak memuat polygon admin |
 | 405 | `method_not_allowed` | Method selain GET |
 | 413 | `payload_too_large` | Body melebihi batas |
 | 429 | `rate_limited` | Dibatasi gateway |
@@ -274,7 +336,7 @@ Format:
 Header `X-Request-ID` selalu dikembalikan. Untuk 429 dan 503, sertakan
 `Retry-After` dalam detik.
 
-## 9. Kompatibilitas Nominatim
+## 10. Kompatibilitas Nominatim
 
 | Fitur Nominatim | Nusapeta Place v1 |
 |---|---|
@@ -290,12 +352,13 @@ Header `X-Request-ID` selalu dikembalikan. Untuk 429 dan 503, sertakan
 | `place_id` | Stabil dari `(osm_type, osm_id)`, bukan `place_id` Nominatim |
 | `osm_ids` | Bisa dipakai untuk migrasi dari Nominatim |
 | `/status` | Tidak ada; gunakan `/healthz` dan `/version` |
+| `/place/admin/reverse` | Ekstensi, tidak ada di Nominatim |
 | `/deletable` | Tidak ada |
 
 Field respons yang tidak ada di `nusapeta-place` tidak boleh dianggap kosong secara
 implisit. Klien harus memeriksa field yang dipakai.
 
-## 10. Atribusi dan lisensi
+## 11. Atribusi dan lisensi
 
 Setiap hasil memuat:
 
@@ -306,7 +369,7 @@ licence: "ODbL 1.0, © OpenStreetMap contributors"
 Atribusi juga wajib terlihat di dokumentasi dan UI yang menampilkan hasil.
 Data OSM berlisensi ODbL 1.0. Kode `nusapeta-place` berlisensi MIT.
 
-## 11. Batas dan versi
+## 12. Batas dan versi
 
 - Panjang `q` maksimum 256 byte.
 - `limit` maksimum 20.

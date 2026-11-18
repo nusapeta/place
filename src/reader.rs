@@ -1,4 +1,4 @@
-//! Read-only, validated access to a format v1 index.
+//! Read-only, validated access to a format v1 or v2 index.
 
 use crate::format::*;
 use crate::normalize::normalize;
@@ -92,15 +92,18 @@ impl Index {
             return invalid("bad magic");
         }
         let version = get_u16(&data, 8);
-        if version != FORMAT_VERSION {
+        if !(MIN_FORMAT_VERSION..=FORMAT_VERSION).contains(&version) {
             return invalid(format!("unsupported format_version {version}"));
+        }
+        if version == 1 && get_u16(&data, 10) != 0 {
+            return invalid("format v1 cannot have optional section flags");
         }
         let header_bytes = get_u32(&data, 12) as usize;
         if header_bytes < HEADER_BYTES || header_bytes > data.len() - TRAILER_BYTES {
             return invalid("header_bytes out of range");
         }
         if header_bytes != HEADER_BYTES {
-            return invalid("format v1 requires header_bytes = 256");
+            return invalid("index requires header_bytes = 256");
         }
         let mut sections = [Section::default(); SECTION_COUNT];
         for (index, section) in sections.iter_mut().enumerate() {
@@ -1048,8 +1051,16 @@ mod validation_tests {
     #[test]
     fn rejects_bad_version() {
         let (_dir, mut bytes) = valid_bytes();
-        put_u16(&mut bytes, 8, 2);
+        put_u16(&mut bytes, 8, 3);
         reject(&bytes, "version");
+    }
+
+    #[test]
+    fn rejects_v1_with_optional_flags() {
+        let (_dir, mut bytes) = valid_bytes();
+        put_u16(&mut bytes, 8, 1);
+        put_u16(&mut bytes, 10, FLAG_ADMIN_POLYGONS);
+        reject(&bytes, "v1 flags");
     }
 
     #[test]

@@ -146,12 +146,12 @@ fn all_endpoints_serve_the_fixture() {
     );
     assert!(health.header("x-request-id").is_some());
     assert_eq!(health.json()["status"], "ok");
-    assert_eq!(health.json()["format_version"], 1);
+    assert_eq!(health.json()["format_version"], 2);
 
     let version = request(port, "GET", "/version");
     assert_eq!(version.status, 200);
     assert_eq!(version.json()["api"], "v1");
-    assert_eq!(version.json()["format_version"], 1);
+    assert_eq!(version.json()["format_version"], 2);
     assert!(version.json()["index_sha256"].as_str().unwrap().len() == 64);
 
     let search = request(port, "GET", "/search?q=indomaret&limit=5");
@@ -294,4 +294,44 @@ fn invalid_inputs_return_json_errors_and_allow_header() {
     let unknown = request(port, "GET", "/nope");
     assert_eq!(unknown.status, 404);
     assert_eq!(unknown.json()["error"], "not_found");
+}
+
+#[test]
+fn admin_reverse_returns_hierarchy_and_errors() {
+    let (server, _dir) = fixture_server();
+    let port = server.port;
+
+    let response = request(
+        port,
+        "GET",
+        "/place/admin/reverse?lat=-6.195&lon=106.815",
+    );
+    assert_eq!(response.status, 200);
+    let body = response.json();
+    assert_eq!(body["name"], "Gambir Village");
+    assert_eq!(body["osm_type"], "relation");
+    assert_eq!(body["osm_id"], 1003);
+    assert_eq!(body["admin_id"], 4);
+    assert_eq!(body["ambiguous"], false);
+    assert_eq!(body["address"]["village"], "Gambir Village");
+    assert_eq!(body["address"]["county"], "Gambir");
+    assert_eq!(body["address"]["city"], "Jakarta Pusat");
+    assert_eq!(body["address"]["state"], "Daerah Khusus Jakarta");
+    assert_eq!(body["address"]["country"], "Indonesia");
+    assert_eq!(
+        body["display_name"],
+        "Gambir Village, Gambir, Jakarta Pusat, Daerah Khusus Jakarta, Indonesia"
+    );
+
+    let missing = request(
+        port,
+        "GET",
+        "/place/admin/reverse?lat=-7.0&lon=107.0",
+    );
+    assert_eq!(missing.status, 404);
+    assert_eq!(missing.json()["error"], "not_found");
+
+    let invalid = request(port, "GET", "/place/admin/reverse?lat=91&lon=0");
+    assert_eq!(invalid.status, 400);
+    assert_eq!(invalid.json()["error"], "invalid_request");
 }

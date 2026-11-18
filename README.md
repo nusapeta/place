@@ -137,8 +137,10 @@ geocoding is out of scope for v1: only 107,088 objects have
 ## Scope v1
 
 - `GET /search?q=...` for place names, POIs, roads, and areas.
-- `GET /reverse?lat=...&lon=...` for the nearest named feature.
-- `GET /lookup?osm_ids=...` and `place_id` lookup.
+- `GET /place/admin/reverse?lat=...&lon=...` for the deepest admin area from
+  stored polygons.
+- `GET /reverse?lat=...&lon=...` for the nearest named feature, using way
+  geometry for long roads and returning `distance_m`.
 - Administrative hierarchy for `display_name` and `address` when polygons are
   available.
 - Indonesian name normalization: lowercase, diacritics, common abbreviations

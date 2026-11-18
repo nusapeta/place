@@ -46,6 +46,7 @@ Exit criteria:
 - Index dengan magic, offset, atau checksum salah ditolak.
 - Dua build fixture menghasilkan index body identik.
 - Layout byte dibekukan untuk `format_version=1`.
+- Format v2 menambah section opsional tanpa mengubah layout v1.
 
 ## Fase 2: Query minimum
 

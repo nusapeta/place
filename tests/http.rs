@@ -203,9 +203,10 @@ fn all_endpoints_serve_the_fixture() {
 
     let reverse = request(port, "GET", "/reverse?lat=-6.2&lon=106.816");
     assert_eq!(reverse.status, 200);
-    assert_eq!(reverse.json()["name"], "Jakarta");
+    assert_eq!(reverse.json()["name"], "Jalan Panjang");
     assert!(reverse.json()["lat"].is_string());
     assert!(reverse.json()["place_id"].is_number());
+    assert!(reverse.json()["distance_m"].as_f64().unwrap() < 10.0);
 
     let lookup = request(port, "GET", "/lookup?osm_ids=N1,W100");
     assert_eq!(lookup.status, 200);
@@ -277,8 +278,12 @@ fn invalid_inputs_return_json_errors_and_allow_header() {
     assert_eq!(long_road.status, 200);
     assert_eq!(long_road.json()["name"], "Jalan Panjang");
     assert_eq!(long_road.json()["osm_id"], 101);
+    let long_road_end = request(port, "GET", "/reverse?lat=-6.2&lon=106.94&radius=1000");
+    assert_eq!(long_road_end.status, 200);
+    assert_eq!(long_road_end.json()["name"], "Jalan Panjang");
+    assert!(long_road_end.json()["distance_m"].as_f64().unwrap() < 10.0);
 
-    let missing = request(port, "GET", "/reverse?lat=-6.2&lon=106.9&radius=1000");
+    let missing = request(port, "GET", "/reverse?lat=-7.0&lon=107.0&radius=1000");
     assert_eq!(missing.status, 404);
     assert_eq!(missing.json()["error"], "not_found");
 

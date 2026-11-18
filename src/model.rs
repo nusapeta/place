@@ -34,6 +34,21 @@ pub struct Admin {
     pub bbox_max_lon_e7: i32,
 }
 
+/// Simplified way geometry retained for reverse distance calculations.
+#[derive(Clone, Debug, Default)]
+pub struct WayLine {
+    pub place_id: u64,
+    pub points: Vec<(i32, i32)>,
+}
+
+/// Administrative boundary rings retained for point-in-polygon lookup.
+#[derive(Clone, Debug, Default)]
+pub struct AdminPolygon {
+    pub admin_id: u32,
+    pub place_id: u64,
+    pub rings: Vec<Vec<(i32, i32)>>,
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct Counters {
     pub features: u64,
@@ -49,6 +64,8 @@ pub struct Counters {
 pub struct IndexData {
     pub places: Vec<Place>,
     pub admins: Vec<Admin>,
+    pub admin_polygons: Vec<AdminPolygon>,
+    pub way_lines: Vec<WayLine>,
     pub counters: Counters,
     pub warnings: Vec<String>,
     pub min_lat_e7: i32,

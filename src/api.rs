@@ -332,17 +332,12 @@ pub async fn reverse(
             "radius must be between 1 and 10000 meters",
         ));
     }
-    let row = nearest_row(&state.index, coordinates, radius);
-    let Some(row) = row else {
-        return Err(ApiError::not_found("no feature within radius"));
-    };
+    let (distance, row) = nearest_row(&state.index, coordinates, radius)
+        .ok_or_else(|| ApiError::not_found("no feature within radius"))?;
     metrics::counter!("nusa_place_results_total", "endpoint" => "reverse").increment(1);
-    Ok(Json(result_json(
-        &state.index,
-        row,
-        addressdetails,
-        &language,
-    )))
+    let mut value = result_json(&state.index, row, addressdetails, &language);
+    value["distance_m"] = json!((distance * 10.0).round() / 10.0);
+    Ok(Json(value))
 }
 
 pub async fn lookup(
@@ -765,7 +760,7 @@ fn intersect(left: &[u32], right: &[u32]) -> Vec<u32> {
     result
 }
 
-fn nearest_row(index: &Index, (lat, lon): (f64, f64), radius_m: f64) -> Option<u32> {
+fn nearest_row(index: &Index, (lat, lon): (f64, f64), radius_m: f64) -> Option<(f64, u32)> {
     let lat_e7 = (lat * 1e7).round() as i32;
     let lon_e7 = (lon * 1e7).round() as i32;
     let grid = index.grid_info();
@@ -795,13 +790,8 @@ fn nearest_row(index: &Index, (lat, lon): (f64, f64), radius_m: f64) -> Option<u
                 if !seen.insert(*row) {
                     continue;
                 }
-                let place = index.place(*row);
-                let distance = haversine(
-                    lat,
-                    lon,
-                    place.lat_e7 as f64 / 1e7,
-                    place.lon_e7 as f64 / 1e7,
-                );
+
+                let distance = place_distance_m(index, *row, lat, lon);
                 if distance > radius_m {
                     continue;
                 }
@@ -823,7 +813,7 @@ fn nearest_row(index: &Index, (lat, lon): (f64, f64), radius_m: f64) -> Option<u
             }
         }
     }
-    best.map(|(_, row)| row)
+    best
 }
 
 fn priority(index: &Index, row: u32) -> u8 {
@@ -832,6 +822,45 @@ fn priority(index: &Index, row: u32) -> u8 {
         "highway" => 2,
         _ => 1,
     }
+}
+
+fn place_distance_m(index: &Index, row: u32, lat: f64, lon: f64) -> f64 {
+    let place = index.place(row);
+    let Some(points) = index.way_points(row) else {
+        return haversine(
+            lat,
+            lon,
+            place.lat_e7 as f64 / 1e7,
+            place.lon_e7 as f64 / 1e7,
+        );
+    };
+    let mut best = f64::INFINITY;
+    for segment in points.chunks_exact(4) {
+        let start = (segment[0], segment[1]);
+        let end = (segment[2], segment[3]);
+        best = best.min(segment_distance_m(lat, lon, start, end));
+    }
+    best
+}
+
+fn segment_distance_m(lat: f64, lon: f64, start: (i32, i32), end: (i32, i32)) -> f64 {
+    let scale = 111_320.0 * lat.to_radians().cos().max(0.01);
+    let (ax, ay) = (
+        (start.1 as f64 / 1e7 - lon) * scale,
+        (start.0 as f64 / 1e7 - lat) * 111_320.0,
+    );
+    let (bx, by) = (
+        (end.1 as f64 / 1e7 - lon) * scale,
+        (end.0 as f64 / 1e7 - lat) * 111_320.0,
+    );
+    let dx = bx - ax;
+    let dy = by - ay;
+    let length_squared = dx * dx + dy * dy;
+    if length_squared == 0.0 {
+        return ax.hypot(ay);
+    }
+    let t = ((-ax * dx - ay * dy) / length_squared).clamp(0.0, 1.0);
+    (ax + t * dx).hypot(ay + t * dy)
 }
 
 fn result_json(index: &Index, row: u32, addressdetails: bool, language: &str) -> Value {
@@ -1029,5 +1058,24 @@ mod tests {
     #[test]
     fn haversine_known_distance() {
         assert!((haversine(-6.2, 106.8, -6.2, 106.9) - 11_090.0).abs() < 200.0);
+    }
+
+    #[test]
+    fn segment_distance_measures_perpendicular_offset() {
+        let distance = segment_distance_m(
+            -6.201,
+            106.9,
+            (-62_000_000, 1_068_000_000),
+            (-62_000_000, 1_069_500_000),
+        );
+        assert!((distance - 111.3).abs() < 5.0);
+    }
+
+    #[test]
+    fn reverse_uses_polyline_distance_for_long_road() {
+        let (_dir, index) = fixture_index();
+        let (distance, row) = nearest_row(&index, (-6.2, 106.94), 1_000.0).unwrap();
+        assert_eq!(index.normalized_name(row), "jalan panjang");
+        assert!(distance < 50.0, "unexpected distance {distance}");
     }
 }

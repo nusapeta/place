@@ -142,13 +142,16 @@ fn build_grid(places: &[Place]) -> Result<GridBuckets> {
 
     let mut cells: BTreeMap<u32, Vec<u32>> = BTreeMap::new();
     for (row, place) in places.iter().enumerate() {
-        let col_idx = (place.lon_e7 - cell_min_lon) / CELL_SIZE_E7;
-        let row_idx = (place.lat_e7 - cell_min_lat) / CELL_SIZE_E7;
-        if col_idx < 0 || col_idx >= cols || row_idx < 0 || row_idx >= rows {
-            bail!("place {} outside grid", place.place_id);
+        let min_row = div_floor(place.bbox_min_lat_e7 - cell_min_lat, CELL_SIZE_E7);
+        let max_row = div_floor(place.bbox_max_lat_e7 - cell_min_lat, CELL_SIZE_E7);
+        let min_col = div_floor(place.bbox_min_lon_e7 - cell_min_lon, CELL_SIZE_E7);
+        let max_col = div_floor(place.bbox_max_lon_e7 - cell_min_lon, CELL_SIZE_E7);
+        for row_idx in min_row.max(0)..=max_row.min(rows - 1) {
+            for col_idx in min_col.max(0)..=max_col.min(cols - 1) {
+                let key = (row_idx as u32) * (cols as u32) + col_idx as u32;
+                cells.entry(key).or_default().push(row as u32);
+            }
         }
-        let key = (row_idx as u32) * (cols as u32) + col_idx as u32;
-        cells.entry(key).or_default().push(row as u32);
     }
     let mut entries = Vec::with_capacity(cells.len());
     for (key, mut rows) in cells {
@@ -358,6 +361,36 @@ pub fn write_index(data: &IndexData, out: &Path) -> Result<WriteSummary> {
         push_record(&mut places_bytes, &record);
     }
 
+    let row_by_id: BTreeMap<u64, u32> = places
+        .iter()
+        .enumerate()
+        .map(|(row, place)| (place.place_id, row as u32))
+        .collect();
+    let mut way_lines: Vec<_> = data
+        .way_lines
+        .iter()
+        .filter(|line| row_by_id.contains_key(&line.place_id))
+        .collect();
+    way_lines.sort_by_key(|line| row_by_id[&line.place_id]);
+    let mut way_lines_bytes = Vec::new();
+    if !way_lines.is_empty() {
+        way_lines_bytes.extend_from_slice(&(way_lines.len() as u32).to_le_bytes());
+        let directory_bytes = way_lines.len() * 12;
+        let mut payload = Vec::new();
+        for line in &way_lines {
+            let row = row_by_id[&line.place_id];
+            way_lines_bytes.extend_from_slice(&row.to_le_bytes());
+            way_lines_bytes.extend_from_slice(&(payload.len() as u32).to_le_bytes());
+            way_lines_bytes.extend_from_slice(&((line.points.len() * 2) as u32).to_le_bytes());
+            for (lat, lon) in &line.points {
+                payload.extend_from_slice(&lat.to_le_bytes());
+                payload.extend_from_slice(&lon.to_le_bytes());
+            }
+        }
+        debug_assert_eq!(way_lines_bytes.len(), 4 + directory_bytes);
+        way_lines_bytes.extend_from_slice(&payload);
+    }
+
     let mut classes_bytes = Vec::with_capacity(DICT_HEADER_BYTES + class_values.len() * 8);
     classes_bytes.extend_from_slice(&(class_values.len() as u32).to_le_bytes());
     classes_bytes.extend_from_slice(&0u32.to_le_bytes());
@@ -413,7 +446,11 @@ pub fn write_index(data: &IndexData, out: &Path) -> Result<WriteSummary> {
     let max_lon = places.iter().map(|p| p.bbox_max_lon_e7).max().unwrap();
 
     let mut header = Header {
-        flags: 0,
+        flags: if way_lines_bytes.is_empty() {
+            0
+        } else {
+            FLAG_WAY_LINES
+        },
         feature_count: places.len() as u32,
         admin_count: admins.len() as u32,
         class_count: class_values.len() as u32,
@@ -454,7 +491,7 @@ pub fn write_index(data: &IndexData, out: &Path) -> Result<WriteSummary> {
         &grid_bytes,
         &admin_bytes,
         &[],
-        &[],
+        &way_lines_bytes,
     ];
     for (index, bytes) in sections_data.iter().enumerate() {
         write_with_alignment(

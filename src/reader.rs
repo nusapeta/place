@@ -35,20 +35,31 @@ pub struct GridInfo {
 
 impl GridInfo {
     pub fn key(&self, lat_e7: i32, lon_e7: i32) -> Option<u32> {
-        let col = (lon_e7 - self.min_lon_e7).div_euclid(self.cell_size_e7);
-        let row = (lat_e7 - self.min_lat_e7).div_euclid(self.cell_size_e7);
-        if col < 0 || col >= self.cols || row < 0 || row >= self.rows {
+        if self.cell_size_e7 <= 0 {
             return None;
         }
-        Some((row as u32) * (self.cols as u32) + col as u32)
+        let col = (i64::from(lon_e7) - i64::from(self.min_lon_e7))
+            .div_euclid(i64::from(self.cell_size_e7));
+        let row = (i64::from(lat_e7) - i64::from(self.min_lat_e7))
+            .div_euclid(i64::from(self.cell_size_e7));
+        let col = i64::from(col);
+        let row = i64::from(row);
+        if col < 0 || col >= i64::from(self.cols) || row < 0 || row >= i64::from(self.rows) {
+            return None;
+        }
+        u32::try_from(row * i64::from(self.cols) + col).ok()
     }
 
     pub fn max_lat_e7(&self) -> i32 {
-        self.min_lat_e7 + self.rows * self.cell_size_e7
+        let value = i64::from(self.min_lat_e7)
+            + i64::from(self.rows) * i64::from(self.cell_size_e7);
+        value.clamp(i64::from(i32::MIN), i64::from(i32::MAX)) as i32
     }
 
     pub fn max_lon_e7(&self) -> i32 {
-        self.min_lon_e7 + self.cols * self.cell_size_e7
+        let value = i64::from(self.min_lon_e7)
+            + i64::from(self.cols) * i64::from(self.cell_size_e7);
+        value.clamp(i64::from(i32::MIN), i64::from(i32::MAX)) as i32
     }
 }
 
@@ -265,6 +276,31 @@ impl Index {
             .get(entry.posting_off as usize..(entry.posting_off + entry.posting_count) as usize)
     }
 
+    pub fn has_way_lines(&self) -> bool {
+        self.header.flags & FLAG_WAY_LINES != 0
+    }
+
+    /// Returns the simplified polyline for a place row as flat `(lat, lon)`
+    /// pairs in e7. `None` when the artifact has no way lines for that row.
+    pub fn way_points(&self, row: u32) -> Option<&[i32]> {
+        if !self.has_way_lines() {
+            return None;
+        }
+        let bytes = self.section(SECTION_WAY_LINES);
+        let count = get_u32(bytes, 0) as usize;
+        let entries = &bytes[4..4 + count * 12];
+        let index = entries
+            .as_chunks::<12>()
+            .0
+            .binary_search_by_key(&row, |entry| get_u32(entry, 0))
+            .ok()?;
+        let entry = &entries[index * 12..index * 12 + 12];
+        let offset = get_u32(entry, 4) as usize;
+        let points = get_u32(entry, 8) as usize;
+        let base = 4 + count * 12 + offset;
+        Some(bytemuck::cast_slice(&bytes[base..base + points * 4]))
+    }
+
     fn validate_layout(&self) -> Result<(), IndexError> {
         let trailer_start = self.data.len() - TRAILER_BYTES;
         let mut previous_end = HEADER_BYTES;
@@ -293,14 +329,28 @@ impl Index {
                 previous_end = end;
             }
         }
-        if self.header.sections[SECTION_RESERVED].len != 0 {
-            return invalid("reserved section must be empty");
+        if self.header.flags & !(FLAG_ADMIN_POLYGONS | FLAG_WAY_LINES) != 0 {
+            return invalid("unknown header flags");
         }
-        if self.header.flags & FLAG_ADMIN_POLYGONS != 0 {
-            return invalid("format v1 reader does not support admin polygons");
+        if self.header.flags & FLAG_ADMIN_POLYGONS != 0
+            && self.header.sections[SECTION_POLYGONS].len == 0
+        {
+            return invalid("admin polygon flag set with empty polygon section");
         }
-        if self.header.sections[SECTION_POLYGONS].len != 0 {
+        if self.header.flags & FLAG_ADMIN_POLYGONS == 0
+            && self.header.sections[SECTION_POLYGONS].len != 0
+        {
             return invalid("polygon section must be empty when flag is unset");
+        }
+        if self.header.flags & FLAG_WAY_LINES != 0
+            && self.header.sections[SECTION_WAY_LINES].len == 0
+        {
+            return invalid("way line flag set with empty way_lines section");
+        }
+        if self.header.flags & FLAG_WAY_LINES == 0
+            && self.header.sections[SECTION_WAY_LINES].len != 0
+        {
+            return invalid("way_lines section must be empty when flag is unset");
         }
         if self.data.len() < HEADER_BYTES + TRAILER_BYTES {
             return invalid("truncated file");
@@ -335,6 +385,7 @@ impl Index {
         self.validate_postings()?;
         self.validate_grid()?;
         self.validate_admin()?;
+        self.validate_way_lines()?;
         Ok(())
     }
 
@@ -590,6 +641,42 @@ impl Index {
         Ok(())
     }
 
+    fn validate_way_lines(&self) -> Result<(), IndexError> {
+        if !self.has_way_lines() {
+            return Ok(());
+        }
+        let bytes = self.section(SECTION_WAY_LINES);
+        if bytes.len() < 4 {
+            return invalid("way_lines section is truncated");
+        }
+        let count = get_u32(bytes, 0) as usize;
+        let directory_end = 4 + count * 12;
+        if directory_end > bytes.len() {
+            return invalid("way_lines directory out of range");
+        }
+        let mut previous: Option<u32> = None;
+        for chunk in bytes[4..directory_end].as_chunks::<12>().0 {
+            let row = get_u32(chunk, 0);
+            if row >= self.header.feature_count {
+                return invalid("way_lines row out of range");
+            }
+            if previous.is_some_and(|value| value >= row) {
+                return invalid("way_lines rows are not sorted and unique");
+            }
+            previous = Some(row);
+            let offset = get_u32(chunk, 4) as usize;
+            let points = get_u32(chunk, 8) as usize;
+            if points < 4 || points % 2 != 0 {
+                return invalid("way_lines point count must be even and at least two points");
+            }
+            let base = directory_end + offset;
+            if base.checked_add(points * 4).is_none_or(|end| end > bytes.len()) {
+                return invalid("way_lines polyline out of range");
+            }
+        }
+        Ok(())
+    }
+
     fn checked_str(&self, offset: u32, len: u16) -> Result<&str, IndexError> {
         let end = offset as u64 + len as u64;
         if end > self.section(SECTION_STRINGS).len() as u64 {
@@ -727,14 +814,14 @@ mod tests {
                 .grid_postings(index.grid_info().key(-780_500_000, 110_050_000).unwrap())
                 .unwrap()
                 .len(),
-            1
+            2
         );
         assert_eq!(
             index
                 .grid_postings(index.grid_info().key(-780_000_000, 110_000_000).unwrap())
                 .unwrap()
                 .len(),
-            1
+            2
         );
         let token = index.token_fst().unwrap().get("jalan").unwrap();
         assert_eq!(index.postings_for(token).unwrap().len(), 1);

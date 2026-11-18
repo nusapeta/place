@@ -34,7 +34,7 @@ pub const SECTION_NAME_FST: usize = 7;
 pub const SECTION_GRID: usize = 8;
 pub const SECTION_ADMIN: usize = 9;
 pub const SECTION_POLYGONS: usize = 10;
-pub const SECTION_RESERVED: usize = 11;
+pub const SECTION_WAY_LINES: usize = 11;
 pub const SECTION_NAMES: [&str; SECTION_COUNT] = [
     "places",
     "classes",
@@ -47,10 +47,11 @@ pub const SECTION_NAMES: [&str; SECTION_COUNT] = [
     "grid",
     "admin",
     "polygons",
-    "reserved",
+    "way_lines",
 ];
 
 pub const FLAG_ADMIN_POLYGONS: u16 = 1;
+pub const FLAG_WAY_LINES: u16 = 2;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]

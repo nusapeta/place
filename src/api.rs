@@ -1078,4 +1078,17 @@ mod tests {
         assert_eq!(index.normalized_name(row), "jalan panjang");
         assert!(distance < 50.0, "unexpected distance {distance}");
     }
+
+    #[test]
+    fn admin_polygons_round_trip() {
+        let (_dir, index) = fixture_index();
+        assert!(index.has_admin_polygons());
+        let polygons: Vec<_> = (1..=index.header.admin_count)
+            .filter_map(|admin_id| index.admin_polygon(admin_id))
+            .collect();
+        assert_eq!(polygons.len(), index.header.admin_count as usize);
+        assert!(polygons
+            .iter()
+            .all(|polygon| !polygon.rings.is_empty() && polygon.rings[0].len() >= 6));
+    }
 }

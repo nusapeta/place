@@ -1,6 +1,6 @@
 //! OSM PBF to in-memory index data pipeline.
 
-use crate::model::{Admin, Counters, IndexData, Place, WayLine};
+use crate::model::{Admin, AdminPolygon, Counters, IndexData, Place, WayLine};
 use crate::place_id::encode_i64;
 use anyhow::{Context, Result};
 use osmpbf::{Element, ElementReader, RelMemberType};
@@ -402,6 +402,14 @@ pub fn build_data(pbf: &Path) -> Result<(IndexData, BuildReport)> {
     for (index, admin) in admins.iter_mut().enumerate() {
         admin.admin_id = index as u32 + 1;
     }
+    let mut admin_polygons = Vec::with_capacity(admins.len());
+    for admin in &admins {
+        admin_polygons.push(AdminPolygon {
+            admin_id: admin.admin_id,
+            place_id: encode_i64(3, admin.osm_id)?,
+            rings: admin.rings.clone(),
+        });
+    }
     let admin_map: Vec<Admin> = admins
         .iter()
         .map(|admin| Admin {
@@ -453,7 +461,7 @@ pub fn build_data(pbf: &Path) -> Result<(IndexData, BuildReport)> {
     let data = IndexData {
         places,
         admins: admin_map,
-        admin_polygons: Vec::new(),
+        admin_polygons,
         way_lines,
         counters,
         warnings,

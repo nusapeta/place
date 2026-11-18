@@ -391,6 +391,30 @@ pub fn write_index(data: &IndexData, out: &Path) -> Result<WriteSummary> {
         way_lines_bytes.extend_from_slice(&payload);
     }
 
+    let mut polygons = data.admin_polygons.clone();
+    polygons.sort_by_key(|polygon| polygon.admin_id);
+    let mut polygons_bytes = Vec::new();
+    if !polygons.is_empty() {
+        polygons_bytes.extend_from_slice(&(polygons.len() as u32).to_le_bytes());
+        let mut payload = Vec::new();
+        for polygon in &polygons {
+            polygons_bytes.extend_from_slice(&polygon.admin_id.to_le_bytes());
+            polygons_bytes.extend_from_slice(&polygon.place_id.to_le_bytes());
+            polygons_bytes.extend_from_slice(&(payload.len() as u32).to_le_bytes());
+            let body_start = payload.len();
+            payload.extend_from_slice(&(polygon.rings.len() as u32).to_le_bytes());
+            for ring in &polygon.rings {
+                payload.extend_from_slice(&((ring.len() * 2) as u32).to_le_bytes());
+                for (lat, lon) in ring {
+                    payload.extend_from_slice(&lat.to_le_bytes());
+                    payload.extend_from_slice(&lon.to_le_bytes());
+                }
+            }
+            polygons_bytes.extend_from_slice(&((payload.len() - body_start) as u32).to_le_bytes());
+        }
+        polygons_bytes.extend_from_slice(&payload);
+    }
+
     let mut classes_bytes = Vec::with_capacity(DICT_HEADER_BYTES + class_values.len() * 8);
     classes_bytes.extend_from_slice(&(class_values.len() as u32).to_le_bytes());
     classes_bytes.extend_from_slice(&0u32.to_le_bytes());
@@ -445,12 +469,15 @@ pub fn write_index(data: &IndexData, out: &Path) -> Result<WriteSummary> {
     let max_lat = places.iter().map(|p| p.bbox_max_lat_e7).max().unwrap();
     let max_lon = places.iter().map(|p| p.bbox_max_lon_e7).max().unwrap();
 
+    let mut flags = 0;
+    if !polygons_bytes.is_empty() {
+        flags |= FLAG_ADMIN_POLYGONS;
+    }
+    if !way_lines_bytes.is_empty() {
+        flags |= FLAG_WAY_LINES;
+    }
     let mut header = Header {
-        flags: if way_lines_bytes.is_empty() {
-            0
-        } else {
-            FLAG_WAY_LINES
-        },
+        flags,
         feature_count: places.len() as u32,
         admin_count: admins.len() as u32,
         class_count: class_values.len() as u32,
@@ -490,7 +517,7 @@ pub fn write_index(data: &IndexData, out: &Path) -> Result<WriteSummary> {
         &name_fst_bytes,
         &grid_bytes,
         &admin_bytes,
-        &[],
+        &polygons_bytes,
         &way_lines_bytes,
     ];
     for (index, bytes) in sections_data.iter().enumerate() {

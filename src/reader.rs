@@ -63,6 +63,12 @@ impl GridInfo {
     }
 }
 
+/// Boundary rings for one admin, owned by the mapped index.
+pub struct AdminPolygonData<'a> {
+    pub place_id: u64,
+    pub rings: Vec<&'a [i32]>,
+}
+
 pub struct Index {
     data: Mmap,
     pub header: Header,
@@ -301,6 +307,42 @@ impl Index {
         Some(bytemuck::cast_slice(&bytes[base..base + points * 4]))
     }
 
+    pub fn has_admin_polygons(&self) -> bool {
+        self.header.flags & FLAG_ADMIN_POLYGONS != 0
+    }
+
+    /// Returns boundary rings as flat `(lat, lon)` pairs in e7.
+    pub fn admin_polygon(&self, admin_id: u32) -> Option<AdminPolygonData<'_>> {
+        if !self.has_admin_polygons() {
+            return None;
+        }
+        let bytes = self.section(SECTION_POLYGONS);
+        let count = get_u32(bytes, 0) as usize;
+        let entries = &bytes[4..4 + count * 20];
+        let index = entries
+            .as_chunks::<20>()
+            .0
+            .binary_search_by_key(&admin_id, |entry| get_u32(entry, 0))
+            .ok()?;
+        let entry = &entries[index * 20..index * 20 + 20];
+        let place_id = get_u64(entry, 4);
+        let offset = get_u32(entry, 12) as usize;
+        let len = get_u32(entry, 16) as usize;
+        let mut position = 4 + count * 20 + offset;
+        let end = position + len;
+        let ring_count = get_u32(bytes, position) as usize;
+        position += 4;
+        let mut rings = Vec::with_capacity(ring_count);
+        for _ in 0..ring_count {
+            let points = get_u32(bytes, position) as usize;
+            position += 4;
+            rings.push(bytemuck::cast_slice(&bytes[position..position + points * 4]));
+            position += points * 4;
+        }
+        debug_assert_eq!(position, end);
+        Some(AdminPolygonData { place_id, rings })
+    }
+
     fn validate_layout(&self) -> Result<(), IndexError> {
         let trailer_start = self.data.len() - TRAILER_BYTES;
         let mut previous_end = HEADER_BYTES;
@@ -385,6 +427,7 @@ impl Index {
         self.validate_postings()?;
         self.validate_grid()?;
         self.validate_admin()?;
+        self.validate_polygons()?;
         self.validate_way_lines()?;
         Ok(())
     }
@@ -636,6 +679,68 @@ impl Index {
                 }
                 current = parent;
                 steps += 1;
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_polygons(&self) -> Result<(), IndexError> {
+        if !self.has_admin_polygons() {
+            return Ok(());
+        }
+        let bytes = self.section(SECTION_POLYGONS);
+        if bytes.len() < 4 {
+            return invalid("polygons section is truncated");
+        }
+        let count = get_u32(bytes, 0) as usize;
+        let directory_end = 4 + count * 20;
+        if directory_end > bytes.len() {
+            return invalid("polygon directory out of range");
+        }
+        let mut previous: Option<u32> = None;
+        for chunk in bytes[4..directory_end].as_chunks::<20>().0 {
+            let admin_id = get_u32(chunk, 0);
+            if admin_id == 0 || admin_id > self.header.admin_count {
+                return invalid("polygon admin_id out of range");
+            }
+            if previous.is_some_and(|value| value >= admin_id) {
+                return invalid("polygon admin_ids are not sorted and unique");
+            }
+            previous = Some(admin_id);
+            let offset = get_u32(chunk, 12) as usize;
+            let len = get_u32(chunk, 16) as usize;
+            let base = directory_end + offset;
+            let Some(end) = base.checked_add(len) else {
+                return invalid("polygon body offset overflow");
+            };
+            if end > bytes.len() {
+                return invalid("polygon body out of range");
+            }
+            let mut position = base;
+            if position + 4 > end {
+                return invalid("polygon ring count out of range");
+            }
+            let ring_count = get_u32(bytes, position) as usize;
+            position += 4;
+            for _ in 0..ring_count {
+                if position + 4 > end {
+                    return invalid("polygon point count out of range");
+                }
+                let points = get_u32(bytes, position) as usize;
+                position += 4;
+                if points < 6 || points % 2 != 0 {
+                    return invalid("polygon ring needs at least three points");
+                }
+                let Some(next) = position.checked_add(points * 4) else {
+                    return invalid("polygon ring offset overflow");
+                };
+                if next > end {
+                    return invalid("polygon ring out of range");
+                }
+                position = next;
+            }
+            if position != end {
+                return invalid("polygon body length mismatch");
             }
         }
         Ok(())

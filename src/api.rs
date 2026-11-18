@@ -953,9 +953,9 @@ fn place_distance_m(index: &Index, row: u32, lat: f64, lon: f64) -> f64 {
         );
     };
     let mut best = f64::INFINITY;
-    for segment in points.chunks_exact(4) {
-        let start = (segment[0], segment[1]);
-        let end = (segment[2], segment[3]);
+    for segment in points.as_chunks::<2>().0.windows(2) {
+        let start = (segment[0][0], segment[0][1]);
+        let end = (segment[1][0], segment[1][1]);
         best = best.min(segment_distance_m(lat, lon, start, end));
     }
     best
@@ -1242,6 +1242,25 @@ mod tests {
         let (distance, row) = nearest_row(&index, (-6.2, 106.94), 1_000.0).unwrap();
         assert_eq!(index.normalized_name(row), "jalan panjang");
         assert!(distance < 50.0, "unexpected distance {distance}");
+    }
+
+    #[test]
+    fn place_distance_uses_every_polyline_segment() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let mut data = crate::reader::tests::sample();
+        data.way_lines.push(crate::model::WayLine {
+            place_id: crate::place_id::encode(2, 20).unwrap(),
+            points: vec![
+                (-780_000_000, 1_100_000_000),
+                (-780_000_000, 1_101_000_000),
+                (-781_000_000, 1_101_000_000),
+            ],
+        });
+        let path = dir.path().join("segments.idx");
+        crate::writer::write_index(&data, &path).unwrap();
+        let index = Index::open(&path, false).unwrap();
+        let distance = place_distance_m(&index, 1, -78.05, 110.1);
+        assert!(distance < 10.0, "unexpected distance {distance}");
     }
 
     #[test]

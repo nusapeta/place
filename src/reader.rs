@@ -42,8 +42,7 @@ impl GridInfo {
             .div_euclid(i64::from(self.cell_size_e7));
         let row = (i64::from(lat_e7) - i64::from(self.min_lat_e7))
             .div_euclid(i64::from(self.cell_size_e7));
-        let col = i64::from(col);
-        let row = i64::from(row);
+
         if col < 0 || col >= i64::from(self.cols) || row < 0 || row >= i64::from(self.rows) {
             return None;
         }
@@ -733,7 +732,7 @@ impl Index {
                 }
                 let points = get_u32(bytes, position) as usize;
                 position += 4;
-                if points < 6 || points % 2 != 0 {
+                if points < 6 || !points.is_multiple_of(2) {
                     return invalid("polygon ring needs at least three points");
                 }
                 let Some(next) = position.checked_add(points * 4) else {
@@ -776,7 +775,7 @@ impl Index {
             previous = Some(row);
             let offset = get_u32(chunk, 4) as usize;
             let points = get_u32(chunk, 8) as usize;
-            if points < 4 || points % 2 != 0 {
+            if points < 4 || !points.is_multiple_of(2) {
                 return invalid("way_lines point count must be even and at least two points");
             }
             let base = directory_end + offset;
@@ -835,7 +834,7 @@ pub fn lang_string(lang: &[u8; 3]) -> String {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use crate::model::{Admin, IndexData, Place};
     use crate::place_id::encode;

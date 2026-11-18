@@ -51,8 +51,8 @@ impl GridInfo {
     }
 
     pub fn max_lat_e7(&self) -> i32 {
-        let value = i64::from(self.min_lat_e7)
-            + i64::from(self.rows) * i64::from(self.cell_size_e7);
+        let value =
+            i64::from(self.min_lat_e7) + i64::from(self.rows) * i64::from(self.cell_size_e7);
         value.clamp(i64::from(i32::MIN), i64::from(i32::MAX)) as i32
     }
 

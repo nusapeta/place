@@ -355,8 +355,8 @@ pub async fn admin_reverse(
 ) -> Result<Json<Value>, ApiError> {
     reject_unsupported(&query)?;
     validate_format(&query)?;
-    let (lat, lon) = parse_coordinates(&query)?
-        .ok_or_else(|| ApiError::invalid("lat and lon are required"))?;
+    let (lat, lon) =
+        parse_coordinates(&query)?.ok_or_else(|| ApiError::invalid("lat and lon are required"))?;
     if !state.index.has_admin_polygons() {
         return Err(ApiError::no_admin_polygons());
     }

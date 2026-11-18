@@ -301,11 +301,7 @@ fn admin_reverse_returns_hierarchy_and_errors() {
     let (server, _dir) = fixture_server();
     let port = server.port;
 
-    let response = request(
-        port,
-        "GET",
-        "/place/admin/reverse?lat=-6.195&lon=106.815",
-    );
+    let response = request(port, "GET", "/place/admin/reverse?lat=-6.195&lon=106.815");
     assert_eq!(response.status, 200);
     let body = response.json();
     assert_eq!(body["name"], "Gambir Village");

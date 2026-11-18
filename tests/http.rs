@@ -133,6 +133,35 @@ fn fixture_server() -> (Server, tempfile::TempDir) {
     (server, dir)
 }
 
+fn suggest_server() -> (Server, tempfile::TempDir) {
+    let dir = tempfile::TempDir::new().unwrap();
+    let pbf = Path::new("tests/fixtures/mini.pbf");
+    let (mut data, report) = build_data(pbf).unwrap();
+    data.places.push(nusa_place::model::Place {
+        place_id: nusa_place::place_id::encode(1, 7).unwrap(),
+        kind: 1,
+        osm_id: 7,
+        name: "Monumen Nasional".to_string(),
+        variants: vec![("alt_name".to_string(), "Monas".to_string())],
+        lat_e7: -61_750_000,
+        lon_e7: 1_068_270_000,
+        importance: 0.9,
+        admin_id: 0,
+        bbox_min_lat_e7: -61_760_000,
+        bbox_max_lat_e7: -61_740_000,
+        bbox_min_lon_e7: 1_068_260_000,
+        bbox_max_lon_e7: 1_068_280_000,
+        class: "tourism".to_string(),
+        r#type: "monument".to_string(),
+    });
+    data.counters.features += 1;
+    let index = dir.path().join("suggest.idx");
+    let summary = write_index(&data, &index).unwrap();
+    let manifest = dir.path().join("suggest.idx.json");
+    write_manifest(&manifest, pbf, &summary, &report).unwrap();
+    (start(&index, &manifest), dir)
+}
+
 #[test]
 fn all_endpoints_serve_the_fixture() {
     let (server, _dir) = fixture_server();
@@ -326,4 +355,52 @@ fn admin_reverse_returns_hierarchy_and_errors() {
     let invalid = request(port, "GET", "/place/admin/reverse?lat=91&lon=0");
     assert_eq!(invalid.status, 400);
     assert_eq!(invalid.json()["error"], "invalid_request");
+}
+
+#[test]
+fn suggest_returns_prefix_matches_with_spatial_bias() {
+    let (server, _dir) = suggest_server();
+    let port = server.port;
+
+    let response = request(port, "GET", "/place/suggest?q=mona");
+    assert_eq!(response.status, 200);
+    let rows = response.json();
+    let rows = rows.as_array().unwrap();
+    assert_eq!(rows[0]["name"], "Monumen Nasional");
+    assert_eq!(rows[0]["match"], "prefix");
+    assert!(rows[0]["score"].as_f64().is_some_and(|score| score > 0.0));
+    assert!(rows.len() <= 20);
+
+    let biased = request(
+        port,
+        "GET",
+        "/place/suggest?q=mona&lat=-6.175&lon=106.827&limit=3",
+    );
+    assert_eq!(biased.status, 200);
+    assert_eq!(biased.json()[0]["name"], "Monumen Nasional");
+
+    let folded = request(port, "GET", "/place/suggest?q=MONA");
+    assert_eq!(folded.json()[0]["name"], "Monumen Nasional");
+
+    let abbreviated = request(port, "GET", "/place/suggest?q=Jl.%20Merdeka");
+    assert_eq!(abbreviated.json()[0]["name"], "Jalan Merdeka");
+
+    for path in [
+        "/place/suggest",
+        "/place/suggest?q=mo",
+        "/place/suggest?q=mona&limit=21",
+        "/place/suggest?q=mona&lat=-6.175",
+        "/place/suggest?q=mona&format=xml",
+    ] {
+        let response = request(port, "GET", path);
+        assert_eq!(response.status, 400, "{path}: {}", response.json());
+    }
+
+    let empty = request(port, "GET", "/place/suggest?q=xyz");
+    assert_eq!(empty.status, 200);
+    assert!(empty.json().as_array().unwrap().is_empty());
+
+    let method = request(port, "POST", "/place/suggest?q=mona");
+    assert_eq!(method.status, 405);
+    assert_eq!(method.header("allow"), Some("GET"));
 }

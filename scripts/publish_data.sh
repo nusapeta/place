@@ -71,7 +71,8 @@ OSM-derived geocoding index for Nusapeta Place, release \`$tag\`.
   \`sha256sum -c <file>.sha256\`. The manifest's \`index.sha256\` is the digest
   of the index body without its 32-byte trailer, which
   \`nusa-place --verify-checksum\` validates at startup.
-- **Format**: PLACEID index v1 (see \`docs/ARCHITECTURE.md\`).
+- **Format**: PLACEID index v2 (see `docs/INDEX-FORMAT.md`). Readers 0.2.0 and
+  later still accept v1 indexes.
 
 Publish a new tag instead of replacing an asset. Readers cache these URLs.
 EOF

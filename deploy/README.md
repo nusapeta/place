@@ -6,9 +6,9 @@ artefaknya.
 
 | Artefak | Ukuran | Keterangan |
 |---|---|---|
-| `places.idx` | 141.997.032 B | Index mmap format v1 |
-| `places.idx.json` | 1.417 B | Manifest: checksum isi, jumlah, bbox, PBF asal |
-| `places.idx.sha256` | 77 B | Checksum file untuk `sha256sum -c` |
+| `places.idx` | 386.376.512 B | Index mmap format v2 (pembaca juga menerima v1) |
+| `places.idx.json` | 1.424 B | Manifest: checksum isi, jumlah, bbox, PBF asal |
+| `places.idx.sha256` | 81 B | Checksum file untuk `sha256sum -c` |
 
 ## 1. Siapkan artefak
 
@@ -104,7 +104,7 @@ data salah.
 
 | Batas | Nilai | Alasan |
 |---|---|---|
-| `mem_limit` | 256m | Index 142 MB dipetakan read-only; halaman file bisa direklaim cgroup |
+| `mem_limit` | 256m | Index 386 MB dipetakan read-only; halaman file bisa direklaim cgroup |
 | `pids_limit` | 128 | Satu proses Tokio, tanpa fork |
 | `read_only` | ya | Tidak ada state yang perlu ditulis |
 | `cap_drop` | ALL | Tidak ada operasi privileged |

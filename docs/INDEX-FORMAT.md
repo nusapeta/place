@@ -403,7 +403,7 @@ Manifest adalah JSON terpisah, ditulis setelah index selesai. Field minimum:
 ```json
 {
   "format_version": 2,
-  "builder": "nusa-place-build 0.1.0",
+  "builder": "nusa-place-build 0.2.0",
   "built_at": "2026-11-13T00:00:00Z",
   "pbf": {
     "name": "indonesia-latest.osm.pbf",

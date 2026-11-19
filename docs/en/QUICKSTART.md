@@ -6,17 +6,17 @@ Requires Docker, curl, and sha256sum.
 
 ```bash
 mkdir -p place-data && cd place-data
-base=https://github.com/nusapeta/place/releases/download/data-2026.11
+base=https://github.com/nusapeta/place/releases/download/data-2026.11.1
 
-curl -fsSLO "$base/places-2026.11.idx"
-curl -fsSLO "$base/places-2026.11.idx.json"
-curl -fsSLO "$base/places-2026.11.idx.sha256"
-sha256sum -c places-2026.11.idx.sha256
+curl -fsSLO "$base/places-v2-2026.11.idx"
+curl -fsSLO "$base/places-v2-2026.11.idx.json"
+curl -fsSLO "$base/places-v2-2026.11.idx.sha256"
+sha256sum -c places-v2-2026.11.idx.sha256
 
 docker run --rm -p 127.0.0.1:8090:8090 -v "$PWD:/data:ro" \
-  ghcr.io/nusapeta/place:0.1.0 \
-  --index /data/places-2026.11.idx \
-  --manifest /data/places-2026.11.idx.json \
+  ghcr.io/nusapeta/place:0.2.0 \
+  --index /data/places-v2-2026.11.idx \
+  --manifest /data/places-v2-2026.11.idx.json \
   --verify-checksum
 ```
 
@@ -31,9 +31,9 @@ curl -s 'http://127.0.0.1:8090/healthz' | jq
 The release checksum covers the whole file. The manifest's `index.sha256`
 covers the index body without its 32-byte trailer; `--verify-checksum` validates
 the trailer. Do not compare the manifest digest with `sha256sum` output. See
-[`../releases/v0.1.0.md`](../releases/v0.1.0.md).
+[`../releases/v0.2.0.md`](../releases/v0.2.0.md).
 
-The index is 142 MB. The container runs as UID 65532 with the index volume
+The index is 386 MB. The container runs as UID 65532 with the index volume
 read-only.
 
 ## Combined stack
@@ -68,9 +68,8 @@ mkdir -p /srv/nusapeta-place/releases/2026-11
   --verify
 ```
 
-A national build takes 228 s and about 8 GiB peak RAM on the test machine
-(`docs/BENCHMARKS.md`; the shipped `data-2026.11` index is byte-identical to
-that run). The builder writes a temporary file and renames it atomically; a
+A national build takes 254 s and about 8 GiB peak RAM on the test machine
+(`docs/BENCHMARKS.md`; the shipped `data-2026.11.1` index comes from that build). The builder writes a temporary file and renames it atomically; a
 failed build leaves the old index untouched.
 
 Check the result:

@@ -6,8 +6,17 @@ All user-visible changes are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-20
+
+Binary and data release. Index format v2 requires a rebuild; v1 indexes still
+load when the new sections are flagged absent.
+
 ### Added
 
+- `GET /suggest` prefix walk over the existing name and token FSTs (NUSA-9):
+  minimum 3 characters, capped at 2,000 rows, ranked by match kind, importance,
+  and optional grid proximity bias, returned as jsonv2 with `match` and
+  `score`.
 - Reverse geocoding now measures distance to stored way polylines for long
   roads and returns `distance_m` (NUSA-1).
 - `GET /place/admin/reverse` returns the deepest admin area from polygon data,
@@ -16,7 +25,12 @@ All user-visible changes are recorded here. The format follows
 ### Changed
 
 - Index format bumped to v2 with optional admin polygon and way-line sections;
-  readers still accept v1 when flags are zero (NUSA-1).
+  readers still accept v1 when flags are zero (NUSA-1). The national index grows
+  from 141,997,032 B to 386,376,512 B; postings grow from 4,837,518 to
+  29,110,855 rows because grid cells now index the whole feature bbox instead
+  of the centroid cell.
+- Idle RSS on the v2 national index is 6.3 MiB (`RssAnon` 0.7 MiB), measured
+  2026-11-20; startup still mmaps the index and does not preload it.
 
 ## [0.1.0] - 2026-11-15
 
@@ -48,5 +62,6 @@ First public release. Project name: Nusapeta Place (previously placeid).
 - Index format is not stable; the crate sets `publish = false`.
 - No built-in authentication, TLS, or rate limit. Run it behind a proxy.
 
-[Unreleased]: https://github.com/nusapeta/place/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/nusapeta/place/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/nusapeta/place/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/nusapeta/place/releases/tag/v0.1.0

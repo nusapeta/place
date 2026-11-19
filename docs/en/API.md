@@ -312,7 +312,7 @@ GET /lookup?osm_ids=N123,W456&addressdetails=0
 {
   "status": "ok",
   "index": "places.idx",
-  "format_version": 1,
+  "format_version": 2,
   "manifest_sha256": "abc123..."
 }
 ```
@@ -324,10 +324,10 @@ Status is 200 only when the index is mapped and the header is valid. Status is
 
 ```json
 {
-  "server": "nusa-place 0.1.0",
+  "server": "nusa-place 0.2.0",
   "api": "v1",
-  "format_version": 1,
-  "builder": "nusa-place-build 0.1.0",
+  "format_version": 2,
+  "builder": "nusa-place-build 0.2.0",
   "pbf_sha256": "def456...",
   "index_sha256": "abc123...",
   "built_at": "2026-11-13T00:00:00Z"

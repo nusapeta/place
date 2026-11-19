@@ -19,7 +19,7 @@ the geocoding half; the router is
 [`nusapeta/route`](https://github.com/nusapeta/route) and the compose bundle is
 [`nusapeta/stack`](https://github.com/nusapeta/stack).
 
-`6.15 MiB` idle RSS · `142 MB` index · `228 s` to build from the national PBF ·
+`6.3 MiB` idle RSS · `386 MB` index · `254 s` to build from the national PBF ·
 `47 MiB` for the running compose stack, four processes.
 
 **Not Google Place ID.** Nusapeta Place has no affiliation with Google. Its
@@ -32,16 +32,16 @@ Requires Docker, curl, and sha256sum.
 
 ```bash
 mkdir -p place-data && cd place-data
-base=https://github.com/nusapeta/place/releases/download/data-2026.11
-curl -fsSLO "$base/places-2026.11.idx"
-curl -fsSLO "$base/places-2026.11.idx.json"
-curl -fsSLO "$base/places-2026.11.idx.sha256"
-sha256sum -c places-2026.11.idx.sha256
+base=https://github.com/nusapeta/place/releases/download/data-2026.11.1
+curl -fsSLO "$base/places-v2-2026.11.idx"
+curl -fsSLO "$base/places-v2-2026.11.idx.json"
+curl -fsSLO "$base/places-v2-2026.11.idx.sha256"
+sha256sum -c places-v2-2026.11.idx.sha256
 
 docker run --rm -p 127.0.0.1:8090:8090 -v "$PWD:/data:ro" \
-  ghcr.io/nusapeta/place:0.1.0 \
-  --index /data/places-2026.11.idx \
-  --manifest /data/places-2026.11.idx.json \
+  ghcr.io/nusapeta/place:0.2.0 \
+  --index /data/places-v2-2026.11.idx \
+  --manifest /data/places-v2-2026.11.idx.json \
   --verify-checksum
 ```
 
@@ -54,9 +54,9 @@ curl 'http://127.0.0.1:8090/healthz'
 ```
 
 The index checksum has two forms. The release `.sha256` covers the whole file
-(`a732b4ec…836d`). The manifest's `index.sha256` covers the index body without
-its 32-byte trailer (`0df44207…2bca`); `--verify-checksum` checks that trailer.
-See [`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md).
+(`81ec7b91…398c`). The manifest's `index.sha256` covers the index body without
+its 32-byte trailer (`1687f25b…0c17`); `--verify-checksum` checks that trailer.
+See [`docs/releases/v0.2.0.md`](docs/releases/v0.2.0.md).
 
 **Read more:** [what it solves](#what-it-solves) · [measured
 corpus](#measured-corpus) · [scope](#scope-v1) · [technical
@@ -184,8 +184,8 @@ JavaScript clients. Contract details:
 | Property | Nusapeta Place | Nominatim |
 |---|---|---|
 | Storage engine | custom mmap index | PostgreSQL + PostGIS |
-| Index / database size | 142 MB | not measured here |
-| Idle RSS | 6.15 MiB | not measured here |
+| Index / database size | 386 MB | not measured here |
+| Idle RSS | 6.3 MiB | not measured here |
 | House-number geocoding | no | yes |
 | Update model | full rebuild | diff replication |
 | Coverage | Indonesia | worldwide |
@@ -220,7 +220,7 @@ engine only.
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | phases and exit criteria |
 | [`docs/research/`](docs/research/) | method research and evidence |
 | [`deploy/README.md`](deploy/README.md) | container, Compose, tunnel, rollback |
-| [`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md) | release notes |
+| [`docs/releases/v0.2.0.md`](docs/releases/v0.2.0.md) | release notes |
 
 The document index and change rules are in [`docs/README.md`](docs/README.md).
 

@@ -19,11 +19,12 @@ crate Rust dengan dua binary, builder batch dan server HTTP, satu file index
 > footprint: one Rust crate with two binaries, one server process, one
 > memory-mapped index file, and no database service.
 
-Status: **v1 kandidat rilis**. Builder, server, format index, dataset uji,
-container, metrik, alert, dan prosedur promote/rollback sudah ada. Angka
-performa di [docs/BENCHMARKS.md](docs/BENCHMARKS.md) adalah hasil pengukuran
-pada mesin uji, bukan target. Catatan rilis:
-[docs/releases/v0.1.0.md](docs/releases/v0.1.0.md).
+Status: **v1 kandidat rilis**, rilis 0.2.0 dengan index format v2. Builder,
+server, format index, dataset uji, container, metrik, alert, dan prosedur
+promote/rollback sudah ada. Angka performa di
+[docs/BENCHMARKS.md](docs/BENCHMARKS.md) adalah hasil pengukuran pada mesin uji,
+bukan target. Catatan rilis:
+[docs/releases/v0.2.0.md](docs/releases/v0.2.0.md).
 
 ## Mulai cepat
 
@@ -57,7 +58,7 @@ curl 'http://127.0.0.1:8090/metrics'
 ```
 
 Build penuh Indonesia memerlukan PBF dan RAM puncak sekitar 8 GiB. Index
-final 141.997.032 B untuk 1.226.755 fitur. Container memakai port 8090 dan
+final 386.376.512 B untuk 1.226.755 fitur. Container memakai port 8090 dan
 mengharapkan index di `/data`.
 
 ## Toolchain
@@ -184,7 +185,7 @@ kontrak ada di [docs/INDEX-FORMAT.md](docs/INDEX-FORMAT.md) dan
 | [docs/research/NFR-REVIEW.md](docs/research/NFR-REVIEW.md) | Status gate NFR |
 | [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) | Lisensi, audit, dan atribusi |
 | [deploy/README.md](deploy/README.md) | Deploy container, Compose homelab, tunnel, update, rollback |
-| [docs/releases/v0.1.0.md](docs/releases/v0.1.0.md) | Catatan rilis |
+| [docs/releases/v0.2.0.md](docs/releases/v0.2.0.md) | Catatan rilis terbaru |
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | Istilah teknis yang dipakai di repo |
 | [docs/decisions/](docs/decisions/) | Architecture Decision Records |
 

@@ -11,7 +11,7 @@
 name: nusapeta-place
 
 x-nusapeta-place: &nusapeta-place
-  image: ${NUSA_PLACE_IMAGE:-ghcr.io/nusapeta/place:0.1.0}
+  image: ${NUSA_PLACE_IMAGE:-ghcr.io/nusapeta/place:0.2.0}
   restart: unless-stopped
   user: "65532:65532"
   read_only: true
@@ -26,7 +26,7 @@ x-nusapeta-place: &nusapeta-place
   security_opt:
     - no-new-privileges:true
   pids_limit: 128
-  # Terukur: index 142 MB dipetakan read-only (halaman file bisa direklaim
+  # Terukur: index 386 MB dipetakan read-only (halaman file bisa direklaim
   # cgroup), RSS anon saat idle di bawah 20 MB.
   mem_limit: 256m
   memswap_limit: 256m

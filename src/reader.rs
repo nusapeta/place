@@ -3,8 +3,11 @@
 use crate::format::*;
 use crate::normalize::normalize;
 use crate::place_id::decode;
+use fst::automaton::Str;
+use fst::{Automaton, IntoStreamer, Streamer};
 use memmap2::{Mmap, MmapOptions};
 use sha2::{Digest, Sha256};
+use std::collections::HashSet;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
@@ -247,6 +250,44 @@ impl Index {
     pub fn name_fst(&self) -> Result<fst::Map<&[u8]>, IndexError> {
         fst::Map::new(self.section(SECTION_NAME_FST))
             .map_err(|error| IndexError::Invalid(format!("name FST: {error}")))
+    }
+
+    /// Collect rows whose normalized name or token starts with `prefix`.
+    /// Each FST walk stops at `cap` rows to keep autocomplete bounded.
+    pub fn prefix_rows(&self, prefix: &str, cap: usize) -> Result<Vec<u32>, IndexError> {
+        let name_fst = self.name_fst()?;
+        let token_fst = self.token_fst()?;
+        let mut rows = Vec::new();
+        let mut seen = HashSet::new();
+        let mut stream = name_fst
+            .search(Str::new(prefix).starts_with())
+            .into_stream();
+        while let Some((_, value)) = stream.next() {
+            let row = value as u32;
+            if seen.insert(row) {
+                rows.push(row);
+            }
+            if rows.len() >= cap {
+                return Ok(rows);
+            }
+        }
+        let mut stream = token_fst
+            .search(Str::new(prefix).starts_with())
+            .into_stream();
+        while let Some((_, value)) = stream.next() {
+            let Some(postings) = self.postings_for(value) else {
+                continue;
+            };
+            for row in postings {
+                if seen.insert(*row) {
+                    rows.push(*row);
+                }
+                if rows.len() >= cap {
+                    return Ok(rows);
+                }
+            }
+        }
+        Ok(rows)
     }
 
     pub fn postings(&self) -> &[u32] {

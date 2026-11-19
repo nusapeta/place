@@ -1,10 +1,10 @@
-//! HTTP API, jsonv2 response shaping, search, reverse, and lookup.
+//! HTTP API, jsonv2 response shaping, search, suggest, reverse, and lookup.
 
 use crate::format::FORMAT_VERSION;
 use crate::manifest::Manifest;
 use crate::normalize::{normalize, tokens};
 use crate::place_id::{decode, encode};
-use crate::reader::Index;
+use crate::reader::{GridInfo, Index};
 use axum::Json;
 use axum::extract::{Query, Request, State};
 use axum::http::{HeaderValue, StatusCode, header};
@@ -23,6 +23,8 @@ const MAX_CANDIDATES: usize = 5_000;
 const MAX_QUERY_BYTES: usize = 256;
 const MAX_LIMIT: usize = 20;
 const MAX_RADIUS_M: f64 = 10_000.0;
+const MIN_SUGGEST_CHARS: usize = 3;
+const SUGGEST_PREFIX_CAP: usize = 2_000;
 
 #[derive(Clone, Copy, Debug)]
 pub struct RankWeights {
@@ -315,6 +317,127 @@ pub async fn search(
     metrics::counter!("nusa_place_results_total", "endpoint" => "search")
         .increment(results.len() as u64);
     Ok(Json(results))
+}
+
+pub async fn suggest(
+    State(state): State<ApiState>,
+    Query(query): Query<HashMap<String, String>>,
+    request: Request,
+) -> Result<Json<Vec<Value>>, ApiError> {
+    reject_unsupported(&query)?;
+    validate_format(&query)?;
+    validate_addressdetails(&query)?;
+    let addressdetails = query.get("addressdetails").map(String::as_str) == Some("1");
+    let language = accept_language(&request);
+    let q = required(&query, "q")?;
+    if q.len() > MAX_QUERY_BYTES {
+        return Err(ApiError::invalid("q exceeds 256 bytes"));
+    }
+    let normalized = normalize(q);
+    if normalized.chars().count() < MIN_SUGGEST_CHARS {
+        return Err(ApiError::invalid("q must contain at least 3 characters"));
+    }
+    let limit = parse_limit(&query)?;
+    let coordinates = parse_coordinates(&query)?;
+    let rows = state
+        .index
+        .prefix_rows(&normalized, SUGGEST_PREFIX_CAP)
+        .map_err(|error| ApiError::internal(error.to_string()))?;
+    metrics::histogram!("nusa_place_suggest_candidates").record(rows.len() as f64);
+
+    let grid = state.index.grid_info();
+    let bias_cell =
+        coordinates.and_then(|(lat, lon)| grid.key((lat * 1e7) as i32, (lon * 1e7) as i32));
+    let query_tokens = effective_tokens(&normalized);
+    let mut scored: Vec<(f64, f32, u32)> = Vec::with_capacity(rows.len());
+    for row in rows {
+        let place = state.index.place(row);
+        let mut names = vec![index_normalized_name(&state.index, row)];
+        names.extend(
+            state
+                .index
+                .place_variants(row)
+                .into_iter()
+                .map(|(_, value)| normalize(&value)),
+        );
+        let exact = names.iter().any(|name| name == &normalized);
+        let prefix = names.iter().any(|name| name.starts_with(&normalized));
+        let token_prefix = names.iter().flat_map(|name| tokens(name)).any(|candidate| {
+            query_tokens
+                .iter()
+                .any(|token| candidate.starts_with(token))
+        });
+        let mut score = f64::from(place.importance)
+            + if exact {
+                2.0
+            } else if prefix {
+                1.0
+            } else {
+                0.0
+            }
+            + f64::from(token_prefix) * 0.5;
+        if let (Some((lat, lon)), Some(bias)) = (coordinates, bias_cell)
+            && let Some(cell) = grid.key(place.lat_e7, place.lon_e7)
+        {
+            let proximity = cell_bias(grid, bias, cell);
+            if proximity > 0.0 {
+                let distance = haversine(
+                    lat,
+                    lon,
+                    place.lat_e7 as f64 / 1e7,
+                    place.lon_e7 as f64 / 1e7,
+                );
+                score += state.weights.proximity * proximity * (-distance / 25_000.0).exp();
+            }
+        }
+        if score.is_finite() {
+            scored.push((score, place.importance, row));
+        }
+    }
+    scored.sort_by(|left, right| {
+        right
+            .0
+            .partial_cmp(&left.0)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| {
+                right
+                    .1
+                    .partial_cmp(&left.1)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            })
+            .then_with(|| left.2.cmp(&right.2))
+    });
+    scored.truncate(limit);
+    let results: Vec<Value> = scored
+        .into_iter()
+        .map(|(score, _, row)| {
+            let mut value = result_json(&state.index, row, addressdetails, &language);
+            value["match"] = json!("prefix");
+            value["score"] = json!((score * 1e6).round() / 1e6);
+            value
+        })
+        .collect();
+    metrics::counter!("nusa_place_results_total", "endpoint" => "suggest")
+        .increment(results.len() as u64);
+    Ok(Json(results))
+}
+
+fn index_normalized_name(index: &Index, row: u32) -> String {
+    index.normalized_name(row).to_string()
+}
+
+fn cell_bias(grid: GridInfo, bias: u32, cell: u32) -> f64 {
+    if bias == cell {
+        return 1.0;
+    }
+    let cols = grid.cols.unsigned_abs();
+    let (bias_row, bias_col) = (bias / cols, bias % cols);
+    let (row, col) = (cell / cols, cell % cols);
+    if bias_row.abs_diff(row) <= 1 && bias_col.abs_diff(col) <= 1 {
+        0.5
+    } else {
+        0.0
+    }
 }
 
 pub async fn reverse(

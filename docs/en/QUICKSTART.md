@@ -14,7 +14,7 @@ curl -fsSLO "$base/places-v2-2026.11.idx.sha256"
 sha256sum -c places-v2-2026.11.idx.sha256
 
 docker run --rm -p 127.0.0.1:8090:8090 -v "$PWD:/data:ro" \
-  ghcr.io/nusapeta/place:0.2.0 \
+  ghcr.io/nusapeta/place:0.2.1 \
   --index /data/places-v2-2026.11.idx \
   --manifest /data/places-v2-2026.11.idx.json \
   --verify-checksum
@@ -31,7 +31,7 @@ curl -s 'http://127.0.0.1:8090/healthz' | jq
 The release checksum covers the whole file. The manifest's `index.sha256`
 covers the index body without its 32-byte trailer; `--verify-checksum` validates
 the trailer. Do not compare the manifest digest with `sha256sum` output. See
-[`../releases/v0.2.0.md`](../releases/v0.2.0.md).
+[`../releases/v0.2.1.md`](../releases/v0.2.1.md).
 
 The index is 386 MB. The container runs as UID 65532 with the index volume
 read-only.
@@ -68,7 +68,7 @@ mkdir -p /srv/nusapeta-place/releases/2026-11
   --verify
 ```
 
-A national build takes 254 s and about 8 GiB peak RAM on the test machine
+A national build takes 235 s and 7.9 GiB peak RSS on the test machine
 (`docs/BENCHMARKS.md`; the shipped `data-2026.11.1` index comes from that build). The builder writes a temporary file and renames it atomically; a
 failed build leaves the old index untouched.
 

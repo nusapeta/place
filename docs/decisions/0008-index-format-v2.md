@@ -9,7 +9,7 @@
 ## Konteks
 
 `/reverse` v1 hanya mengukur jarak haversine ke centroid. Untuk jalan panjang,
-centroid bukan lokasi terdekat ke titik kueri. `/place/admin/reverse` juga tidak
+centroid bukan lokasi terdekat ke titik kueri. `/admin/reverse` juga tidak
 bisa dibangun hanya dari bbox admin karena bbox tidak membedakan titik di dalam
 dan di luar batas.
 
@@ -27,7 +27,7 @@ Format index dinaikkan ke `format_version = 2` dengan `MIN_FORMAT_VERSION = 1`.
 - Reader v2 menerima v1 hanya jika `flags == 0`.
 - `/reverse` memakai jarak ke polyline untuk jalan panjang dan centroid untuk
   fitur lain; field `distance_m` ditambahkan.
-- `/place/admin/reverse` mengembalikan hierarchy admin dari polygon dan
+- `/admin/reverse` mengembalikan hierarchy admin dari polygon dan
   menghasilkan 501 `no_admin_polygons` bila section tidak ada.
 
 ## Konsekuensi

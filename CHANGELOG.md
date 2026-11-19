@@ -6,6 +6,20 @@ All user-visible changes are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-20
+
+### Fixed
+
+- `GET /suggest` and `GET /admin/reverse` are registered at the paths the API
+  documents. 0.2.0 mounted them as `/place/suggest` and `/place/admin/reverse`,
+  which is the prefix the bundle adds in front of the geocoder, so both answered
+  404 once the gateway stripped `/place` before forwarding.
+
+### Changed
+
+- The server prints the address it actually bound, so `--bind 127.0.0.1:0` is
+  usable by a caller that needs the kernel-assigned port.
+
 ## [0.2.0] - 2026-11-20
 
 Binary and data release. Index format v2 requires a rebuild; v1 indexes still
@@ -19,7 +33,7 @@ load when the new sections are flagged absent.
   `score`.
 - Reverse geocoding now measures distance to stored way polylines for long
   roads and returns `distance_m` (NUSA-1).
-- `GET /place/admin/reverse` returns the deepest admin area from polygon data,
+- `GET /admin/reverse` returns the deepest admin area from polygon data,
   with hierarchy, `ambiguous`, and 501 `no_admin_polygons` (NUSA-1).
 
 ### Changed

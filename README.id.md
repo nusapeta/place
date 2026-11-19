@@ -19,12 +19,12 @@ crate Rust dengan dua binary, builder batch dan server HTTP, satu file index
 > footprint: one Rust crate with two binaries, one server process, one
 > memory-mapped index file, and no database service.
 
-Status: **v1 kandidat rilis**, rilis 0.2.0 dengan index format v2. Builder,
+Status: **v1 kandidat rilis**, rilis 0.2.1 dengan index format v2. Builder,
 server, format index, dataset uji, container, metrik, alert, dan prosedur
 promote/rollback sudah ada. Angka performa di
 [docs/BENCHMARKS.md](docs/BENCHMARKS.md) adalah hasil pengukuran pada mesin uji,
 bukan target. Catatan rilis:
-[docs/releases/v0.2.0.md](docs/releases/v0.2.0.md).
+[docs/releases/v0.2.1.md](docs/releases/v0.2.1.md).
 
 ## Mulai cepat
 
@@ -125,7 +125,7 @@ occupancy grid ada di
 - `GET /search?q=...` untuk nama tempat, POI, jalan, dan wilayah.
 - `GET /reverse?lat=...&lon=...` untuk fitur bernama terdekat, memakai geometri
   jalan untuk jalan panjang dan mengembalikan `distance_m`.
-- `GET /place/admin/reverse?lat=...&lon=...` untuk area admin terdalam dari
+- `GET /admin/reverse?lat=...&lon=...` untuk area admin terdalam dari
   polygon yang tersimpan.
 - `GET /lookup?osm_ids=...` dan lookup `place_id`.
 - Hierarki administratif untuk `display_name` dan `address`, bila polygon
@@ -185,7 +185,7 @@ kontrak ada di [docs/INDEX-FORMAT.md](docs/INDEX-FORMAT.md) dan
 | [docs/research/NFR-REVIEW.md](docs/research/NFR-REVIEW.md) | Status gate NFR |
 | [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) | Lisensi, audit, dan atribusi |
 | [deploy/README.md](deploy/README.md) | Deploy container, Compose homelab, tunnel, update, rollback |
-| [docs/releases/v0.2.0.md](docs/releases/v0.2.0.md) | Catatan rilis terbaru |
+| [docs/releases/v0.2.1.md](docs/releases/v0.2.1.md) | Catatan rilis terbaru |
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | Istilah teknis yang dipakai di repo |
 | [docs/decisions/](docs/decisions/) | Architecture Decision Records |
 

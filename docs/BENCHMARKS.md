@@ -162,6 +162,25 @@ Rincian dataset, per kategori, reverse, dan beban ada di
 [P4-EVIDENCE](research/P4-EVIDENCE.md). Status NFR ada di
 [NFR-REVIEW](research/NFR-REVIEW.md).
 
+### 5.1 Index v2 (0.2.0, 2026-11-20)
+
+Build ulang dari PBF yang sama pada mesin yang sama (`aa69489`, binary
+0.2.0):
+
+| Metrik | Hasil |
+|---|---:|
+| Ukuran index | 386.376.512 B |
+| Postings | 29.110.855 row |
+| Waktu build | 235,10 s (features 57,17; way geometry 48,50; node coords 61,57; assemble 46,03) |
+| Puncak RSS build | 7,87 GiB (`ru_maxrss` 8.252.288 KiB) |
+| Idle RSS sesudah start | 6.300 KiB (`RssAnon` 684 KiB, `RssFile` 5.616 KiB) |
+| `sha256` file | `81ec7b91…398c` |
+
+Dua build dari PBF yang sama menghasilkan file byte-identik; checksum isi
+`1687f25b…0c17` juga sama dengan build sebelumnya. Angka latency pada tabel
+di atas belum diukur ulang pada index v2, karena jumlah kandidat dan postings
+per query berbeda.
+
 ## 6. Analisis regresi
 
 - Bandingkan hasil pada commit yang sama dengan mesin yang sama.

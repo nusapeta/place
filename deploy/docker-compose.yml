@@ -11,7 +11,7 @@
 name: nusapeta-place
 
 x-nusapeta-place: &nusapeta-place
-  image: ${NUSA_PLACE_IMAGE:-ghcr.io/nusapeta/place:0.2.0}
+  image: ${NUSA_PLACE_IMAGE:-ghcr.io/nusapeta/place:0.2.1}
   restart: unless-stopped
   user: "65532:65532"
   read_only: true

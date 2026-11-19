@@ -330,7 +330,7 @@ Aturan:
 ## 13. Admin polygons
 
 Section opsional. Jika `flags` bit 0 tidak diset, `len` harus 0. Endpoint
-`/place/admin/reverse` memakai section ini untuk point-in-polygon.
+`/admin/reverse` memakai section ini untuk point-in-polygon.
 
 Header:
 

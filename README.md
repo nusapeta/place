@@ -19,7 +19,7 @@ the geocoding half; the router is
 [`nusapeta/route`](https://github.com/nusapeta/route) and the compose bundle is
 [`nusapeta/stack`](https://github.com/nusapeta/stack).
 
-`6.3 MiB` idle RSS · `386 MB` index · `254 s` to build from the national PBF ·
+`6.3 MiB` idle RSS · `386 MB` index · `235 s` to build from the national PBF ·
 `47 MiB` for the running compose stack, four processes.
 
 **Not Google Place ID.** Nusapeta Place has no affiliation with Google. Its
@@ -39,7 +39,7 @@ curl -fsSLO "$base/places-v2-2026.11.idx.sha256"
 sha256sum -c places-v2-2026.11.idx.sha256
 
 docker run --rm -p 127.0.0.1:8090:8090 -v "$PWD:/data:ro" \
-  ghcr.io/nusapeta/place:0.2.0 \
+  ghcr.io/nusapeta/place:0.2.1 \
   --index /data/places-v2-2026.11.idx \
   --manifest /data/places-v2-2026.11.idx.json \
   --verify-checksum
@@ -56,7 +56,7 @@ curl 'http://127.0.0.1:8090/healthz'
 The index checksum has two forms. The release `.sha256` covers the whole file
 (`81ec7b91…398c`). The manifest's `index.sha256` covers the index body without
 its 32-byte trailer (`1687f25b…0c17`); `--verify-checksum` checks that trailer.
-See [`docs/releases/v0.2.0.md`](docs/releases/v0.2.0.md).
+See [`docs/releases/v0.2.1.md`](docs/releases/v0.2.1.md).
 
 **Read more:** [what it solves](#what-it-solves) · [measured
 corpus](#measured-corpus) · [scope](#scope-v1) · [technical
@@ -137,7 +137,7 @@ geocoding is out of scope for v1: only 107,088 objects have
 ## Scope v1
 
 - `GET /search?q=...` for place names, POIs, roads, and areas.
-- `GET /place/admin/reverse?lat=...&lon=...` for the deepest admin area from
+- `GET /admin/reverse?lat=...&lon=...` for the deepest admin area from
   stored polygons.
 - `GET /reverse?lat=...&lon=...` for the nearest named feature, using way
   geometry for long roads and returning `distance_m`.
@@ -220,7 +220,7 @@ engine only.
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | phases and exit criteria |
 | [`docs/research/`](docs/research/) | method research and evidence |
 | [`deploy/README.md`](deploy/README.md) | container, Compose, tunnel, rollback |
-| [`docs/releases/v0.2.0.md`](docs/releases/v0.2.0.md) | release notes |
+| [`docs/releases/v0.2.1.md`](docs/releases/v0.2.1.md) | release notes |
 
 The document index and change rules are in [`docs/README.md`](docs/README.md).
 

@@ -25,9 +25,9 @@ dikirim sebagai angka.
 | Method | Path | Fungsi |
 |---|---|---|
 | GET | `/search` | Forward search berdasarkan nama |
-| GET | `/place/suggest` | Autocomplete prefix dari name/token FST |
+| GET | `/suggest` | Autocomplete prefix dari name/token FST |
 | GET | `/reverse` | Fitur terdekat dari koordinat |
-| GET | `/place/admin/reverse` | Admin area terdalam dari koordinat |
+| GET | `/admin/reverse` | Admin area terdalam dari koordinat |
 | GET | `/lookup` | Ambil fitur berdasarkan ID |
 | GET | `/healthz` | Status index dan kesiapan server |
 | GET | `/version` | Versi server dan manifest |
@@ -112,7 +112,7 @@ Contoh di atas ilustratif. `place_id`, `osm_id`, koordinat, dan `importance`
 bukan data hasil build.
 
 
-## 5. `GET /place/suggest`
+## 5. `GET /suggest`
 
 ### 5.1 Parameter
 
@@ -139,7 +139,7 @@ bukan data hasil build.
 ### 5.3 Contoh
 
 ```http
-GET /place/suggest?q=mona&lat=-6.175&lon=106.827&limit=3
+GET /suggest?q=mona&lat=-6.175&lon=106.827&limit=3
 ```
 
 ```json
@@ -208,7 +208,7 @@ GET /reverse?lat=-7.7956&lon=110.3695&radius=500&addressdetails=1
 }
 ```
 
-## 7. `GET /place/admin/reverse`
+## 7. `GET /admin/reverse`
 
 ### 7.1 Parameter
 
@@ -236,7 +236,7 @@ Endpoint ini selalu mengembalikan objek `address`. Parameter
 ### 7.3 Contoh
 
 ```http
-GET /place/admin/reverse?lat=-6.195&lon=106.815
+GET /admin/reverse?lat=-6.195&lon=106.815
 ```
 
 ```json
@@ -414,7 +414,7 @@ Data OSM berlisensi ODbL 1.0. Kode `nusapeta-place` berlisensi MIT.
 
 ## 13. Batas dan versi
 
-- Panjang `q` maksimum 256 byte; `q` pada `/place/suggest` minimal 3 karakter.
+- Panjang `q` maksimum 256 byte; `q` pada `/suggest` minimal 3 karakter.
 - `limit` maksimum 20.
 - `radius` maksimum 10 km.
 - `osm_ids` atau `place_ids` maksimum 50.

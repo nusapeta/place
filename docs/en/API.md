@@ -26,9 +26,9 @@ Coordinates are decimal strings. `place_id` and `osm_id` are numbers.
 | Method | Path | Function |
 |---|---|---|
 | GET | `/search` | Forward search by name |
-| GET | `/place/suggest` | Prefix autocomplete from name/token FST |
+| GET | `/suggest` | Prefix autocomplete from name/token FST |
 | GET | `/reverse` | Nearest feature to a coordinate |
-| GET | `/place/admin/reverse` | Deepest admin area for a coordinate |
+| GET | `/admin/reverse` | Deepest admin area for a coordinate |
 | GET | `/lookup` | Fetch features by ID |
 | GET | `/healthz` | Index status and server readiness |
 | GET | `/version` | Server and manifest versions |
@@ -110,7 +110,7 @@ The example is illustrative. `place_id`, `osm_id`, coordinates, and
 `importance` are not build output.
 
 
-## 5. `GET /place/suggest`
+## 5. `GET /suggest`
 
 ### 5.1 Parameters
 
@@ -137,7 +137,7 @@ The example is illustrative. `place_id`, `osm_id`, coordinates, and
 ### 5.3 Example
 
 ```http
-GET /place/suggest?q=mona&lat=-6.175&lon=106.827&limit=3
+GET /suggest?q=mona&lat=-6.175&lon=106.827&limit=3
 ```
 
 ```json
@@ -206,7 +206,7 @@ GET /reverse?lat=-7.7956&lon=110.3695&radius=500&addressdetails=1
 }
 ```
 
-## 7. `GET /place/admin/reverse`
+## 7. `GET /admin/reverse`
 
 ### 7.1 Parameters
 
@@ -233,7 +233,7 @@ The response always includes `address`. `addressdetails` does not change it.
 ### 7.3 Example
 
 ```http
-GET /place/admin/reverse?lat=-6.195&lon=106.815
+GET /admin/reverse?lat=-6.195&lon=106.815
 ```
 
 ```json
@@ -407,7 +407,7 @@ results. OSM data is ODbL 1.0. `nusapeta-place` code is MIT.
 
 ## 13. Limits and versioning
 
-- `q` is at most 256 bytes; `/place/suggest` requires at least 3 characters.
+- `q` is at most 256 bytes; `/suggest` requires at least 3 characters.
 - `limit` is at most 20.
 - `radius` is at most 10 km.
 - `osm_ids` or `place_ids` is at most 50.

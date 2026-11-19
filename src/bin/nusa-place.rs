@@ -75,9 +75,9 @@ async fn main() -> Result<()> {
     };
     let app = Router::new()
         .route("/search", get(api::search))
-        .route("/place/suggest", get(api::suggest))
+        .route("/suggest", get(api::suggest))
         .route("/reverse", get(api::reverse))
-        .route("/place/admin/reverse", get(api::admin_reverse))
+        .route("/admin/reverse", get(api::admin_reverse))
         .route("/lookup", get(api::lookup))
         .route("/healthz", get(api::healthz))
         .route("/version", get(api::version))
@@ -90,7 +90,10 @@ async fn main() -> Result<()> {
     let listener = TcpListener::bind(args.bind)
         .await
         .with_context(|| format!("bind {}", args.bind))?;
-    eprintln!("listening on http://{}", args.bind);
+    // Report the address the kernel gave us, not the one asked for: `:0` is a
+    // valid bind, and a caller that needs the port it landed on reads this line.
+    let local = listener.local_addr().context("local address")?;
+    eprintln!("listening on http://{}", local);
     axum::serve(listener, app).await?;
     Ok(())
 }

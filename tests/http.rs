@@ -4,8 +4,8 @@ use nusa_place::build::build_data;
 use nusa_place::manifest::write_manifest;
 use nusa_place::writer::write_index;
 use serde_json::Value;
-use std::io::{Read, Write};
-use std::net::{TcpListener, TcpStream};
+use std::io::{BufRead, Read, Write};
+use std::net::TcpStream;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant};
@@ -13,6 +13,9 @@ use std::time::{Duration, Instant};
 struct Server {
     child: Child,
     port: u16,
+    // Held so the child keeps a stderr it can write to: the server logs startup
+    // and errors there, and a panicking print would take the process down.
+    _stderr: Option<std::io::BufReader<std::process::ChildStderr>>,
 }
 
 impl Drop for Server {
@@ -84,14 +87,6 @@ fn request(port: u16, method: &str, path: &str) -> Response {
     }
 }
 
-fn free_port() -> u16 {
-    TcpListener::bind("127.0.0.1:0")
-        .unwrap()
-        .local_addr()
-        .unwrap()
-        .port()
-}
-
 fn build_fixture(dir: &Path) -> (PathBuf, PathBuf) {
     let pbf = Path::new("tests/fixtures/mini.pbf");
     let (data, report) = build_data(pbf).unwrap();
@@ -103,19 +98,34 @@ fn build_fixture(dir: &Path) -> (PathBuf, PathBuf) {
 }
 
 fn start(index: &Path, manifest: &Path) -> Server {
-    let port = free_port();
-    let child = Command::new(env!("CARGO_BIN_EXE_nusa-place"))
+    // Bind port 0: the server reports the port it got on its first stderr line.
+    // Picking a free port here and hoping it is still free when the child binds
+    // races other tests in this binary, and a test that loses the race talks to
+    // its neighbour's server.
+    let mut child = Command::new(env!("CARGO_BIN_EXE_nusa-place"))
         .arg("--index")
         .arg(index)
         .arg("--manifest")
         .arg(manifest)
         .arg("--bind")
-        .arg(format!("127.0.0.1:{port}"))
+        .arg("127.0.0.1:0")
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stderr(Stdio::piped())
         .spawn()
         .unwrap();
-    let server = Server { child, port };
+    let mut stderr = std::io::BufReader::new(child.stderr.take().unwrap());
+    let mut line = String::new();
+    stderr.read_line(&mut line).unwrap();
+    let port = line
+        .rsplit(':')
+        .next()
+        .and_then(|raw| raw.trim().parse().ok())
+        .unwrap_or_else(|| panic!("unexpected startup line: {line:?}"));
+    let server = Server {
+        child,
+        port,
+        _stderr: Some(stderr),
+    };
     let deadline = Instant::now() + Duration::from_secs(10);
     while Instant::now() < deadline {
         if TcpStream::connect(("127.0.0.1", port)).is_ok() {
@@ -330,7 +340,7 @@ fn admin_reverse_returns_hierarchy_and_errors() {
     let (server, _dir) = fixture_server();
     let port = server.port;
 
-    let response = request(port, "GET", "/place/admin/reverse?lat=-6.195&lon=106.815");
+    let response = request(port, "GET", "/admin/reverse?lat=-6.195&lon=106.815");
     assert_eq!(response.status, 200);
     let body = response.json();
     assert_eq!(body["name"], "Gambir Village");
@@ -348,11 +358,11 @@ fn admin_reverse_returns_hierarchy_and_errors() {
         "Gambir Village, Gambir, Jakarta Pusat, Daerah Khusus Jakarta, Indonesia"
     );
 
-    let missing = request(port, "GET", "/place/admin/reverse?lat=-7.0&lon=107.0");
+    let missing = request(port, "GET", "/admin/reverse?lat=-7.0&lon=107.0");
     assert_eq!(missing.status, 404);
     assert_eq!(missing.json()["error"], "not_found");
 
-    let invalid = request(port, "GET", "/place/admin/reverse?lat=91&lon=0");
+    let invalid = request(port, "GET", "/admin/reverse?lat=91&lon=0");
     assert_eq!(invalid.status, 400);
     assert_eq!(invalid.json()["error"], "invalid_request");
 }
@@ -362,7 +372,7 @@ fn suggest_returns_prefix_matches_with_spatial_bias() {
     let (server, _dir) = suggest_server();
     let port = server.port;
 
-    let response = request(port, "GET", "/place/suggest?q=mona");
+    let response = request(port, "GET", "/suggest?q=mona");
     assert_eq!(response.status, 200);
     let rows = response.json();
     let rows = rows.as_array().unwrap();
@@ -374,33 +384,33 @@ fn suggest_returns_prefix_matches_with_spatial_bias() {
     let biased = request(
         port,
         "GET",
-        "/place/suggest?q=mona&lat=-6.175&lon=106.827&limit=3",
+        "/suggest?q=mona&lat=-6.175&lon=106.827&limit=3",
     );
     assert_eq!(biased.status, 200);
     assert_eq!(biased.json()[0]["name"], "Monumen Nasional");
 
-    let folded = request(port, "GET", "/place/suggest?q=MONA");
+    let folded = request(port, "GET", "/suggest?q=MONA");
     assert_eq!(folded.json()[0]["name"], "Monumen Nasional");
 
-    let abbreviated = request(port, "GET", "/place/suggest?q=Jl.%20Merdeka");
+    let abbreviated = request(port, "GET", "/suggest?q=Jl.%20Merdeka");
     assert_eq!(abbreviated.json()[0]["name"], "Jalan Merdeka");
 
     for path in [
-        "/place/suggest",
-        "/place/suggest?q=mo",
-        "/place/suggest?q=mona&limit=21",
-        "/place/suggest?q=mona&lat=-6.175",
-        "/place/suggest?q=mona&format=xml",
+        "/suggest",
+        "/suggest?q=mo",
+        "/suggest?q=mona&limit=21",
+        "/suggest?q=mona&lat=-6.175",
+        "/suggest?q=mona&format=xml",
     ] {
         let response = request(port, "GET", path);
         assert_eq!(response.status, 400, "{path}: {}", response.json());
     }
 
-    let empty = request(port, "GET", "/place/suggest?q=xyz");
+    let empty = request(port, "GET", "/suggest?q=xyz");
     assert_eq!(empty.status, 200);
     assert!(empty.json().as_array().unwrap().is_empty());
 
-    let method = request(port, "POST", "/place/suggest?q=mona");
+    let method = request(port, "POST", "/suggest?q=mona");
     assert_eq!(method.status, 405);
     assert_eq!(method.header("allow"), Some("GET"));
 }

@@ -1,6 +1,6 @@
 //! OSM PBF to in-memory index data pipeline.
 
-use crate::model::{Admin, Counters, IndexData, Place};
+use crate::model::{Admin, AdminPolygon, Counters, IndexData, Place, WayLine};
 use crate::place_id::encode_i64;
 use anyhow::{Context, Result};
 use osmpbf::{Element, ElementReader, RelMemberType};
@@ -319,6 +319,7 @@ pub fn build_data(pbf: &Path) -> Result<(IndexData, BuildReport)> {
     let mut places =
         Vec::with_capacity(pass1.nodes.len() + pass1.ways.len() + pass1.relations.len());
     let mut skipped = pass1.skipped;
+    let mut way_lines = Vec::new();
 
     for draft in &pass1.nodes {
         let Some(position) = draft.position else {
@@ -341,6 +342,14 @@ pub fn build_data(pbf: &Path) -> Result<(IndexData, BuildReport)> {
         };
         let admin_id = admin_index.lookup(centroid.0, centroid.1, &admins);
         if let Some(place) = to_place(draft, centroid, bbox, admin_id) {
+            if place.class == "highway"
+                && let Some(points) = way_line_for_reverse(&draft.refs, bbox, &geoms)
+            {
+                way_lines.push(WayLine {
+                    place_id: place.place_id,
+                    points,
+                });
+            }
             places.push(place);
         } else {
             skipped += 1;
@@ -393,6 +402,14 @@ pub fn build_data(pbf: &Path) -> Result<(IndexData, BuildReport)> {
     for (index, admin) in admins.iter_mut().enumerate() {
         admin.admin_id = index as u32 + 1;
     }
+    let mut admin_polygons = Vec::with_capacity(admins.len());
+    for admin in &admins {
+        admin_polygons.push(AdminPolygon {
+            admin_id: admin.admin_id,
+            place_id: encode_i64(3, admin.osm_id)?,
+            rings: admin.rings.clone(),
+        });
+    }
     let admin_map: Vec<Admin> = admins
         .iter()
         .map(|admin| Admin {
@@ -444,6 +461,8 @@ pub fn build_data(pbf: &Path) -> Result<(IndexData, BuildReport)> {
     let data = IndexData {
         places,
         admins: admin_map,
+        admin_polygons,
+        way_lines,
         counters,
         warnings,
         ..Default::default()
@@ -720,6 +739,40 @@ fn way_geometry(refs: &[i64], geoms: &Geoms) -> Option<((i32, i32), [i32; 4])> {
         return None;
     }
     bbox_of(&points).map(|bbox| (mean_point(&points), bbox))
+}
+
+/// Retain a simplified geometry only for ways whose bbox is long enough for
+/// centroid distance to be misleading. Points stay in e7 `(lat, lon)` order.
+fn way_line_for_reverse(refs: &[i64], bbox: [i32; 4], geoms: &Geoms) -> Option<Vec<(i32, i32)>> {
+    let mid_lat = (bbox[0] as f64 + bbox[2] as f64) / 2.0 / 1e7;
+    let lat_span = (bbox[2] - bbox[0]) as f64 / 1e7 * 111_320.0;
+    let lon_span = (bbox[3] - bbox[1]) as f64 / 1e7 * 111_320.0 * mid_lat.to_radians().cos();
+    if lat_span.hypot(lon_span) < 1_000.0 {
+        return None;
+    }
+    let mut points = Vec::with_capacity(refs.len());
+    for id in refs {
+        let Some(point) = geoms.coordinate(*id) else {
+            continue;
+        };
+        if points.last() != Some(&point) {
+            points.push(point);
+        }
+    }
+    if points.len() < 2 {
+        return None;
+    }
+    if points.len() > 16 {
+        let last = points.len() - 1;
+        let step = last as f64 / 15.0;
+        let mut simplified = Vec::with_capacity(16);
+        for index in 0..15 {
+            simplified.push(points[(index as f64 * step).round() as usize]);
+        }
+        simplified.push(points[last]);
+        points = simplified;
+    }
+    Some(points)
 }
 
 fn relation_geometry(members: &[Member], geoms: &Geoms) -> Option<((i32, i32), [i32; 4])> {

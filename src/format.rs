@@ -1,4 +1,4 @@
-//! Core data structures for the nusapeta-place index format v1.
+//! Core data structures for the nusapeta-place index format v2.
 //!
 //! The on-disk layout is documented in `docs/INDEX-FORMAT.md`. All integers
 //! are little-endian. Records are fixed-size and contain no pointers.
@@ -8,7 +8,8 @@ use bytemuck::{Pod, Zeroable};
 /// On-disk format identifier, not a brand: indexes built before the nusapeta
 /// rename still start with it, so it only changes with a format version bump.
 pub const MAGIC: [u8; 8] = *b"PLACEID\0";
-pub const FORMAT_VERSION: u16 = 1;
+pub const FORMAT_VERSION: u16 = 2;
+pub const MIN_FORMAT_VERSION: u16 = 1;
 pub const HEADER_BYTES: usize = 256;
 pub const SECTION_COUNT: usize = 12;
 pub const SECTION_TABLE_OFFSET: usize = 64;
@@ -34,7 +35,7 @@ pub const SECTION_NAME_FST: usize = 7;
 pub const SECTION_GRID: usize = 8;
 pub const SECTION_ADMIN: usize = 9;
 pub const SECTION_POLYGONS: usize = 10;
-pub const SECTION_RESERVED: usize = 11;
+pub const SECTION_WAY_LINES: usize = 11;
 pub const SECTION_NAMES: [&str; SECTION_COUNT] = [
     "places",
     "classes",
@@ -47,10 +48,11 @@ pub const SECTION_NAMES: [&str; SECTION_COUNT] = [
     "grid",
     "admin",
     "polygons",
-    "reserved",
+    "way_lines",
 ];
 
 pub const FLAG_ADMIN_POLYGONS: u16 = 1;
+pub const FLAG_WAY_LINES: u16 = 2;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]

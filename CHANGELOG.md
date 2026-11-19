@@ -6,6 +6,18 @@ All user-visible changes are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Reverse geocoding now measures distance to stored way polylines for long
+  roads and returns `distance_m` (NUSA-1).
+- `GET /place/admin/reverse` returns the deepest admin area from polygon data,
+  with hierarchy, `ambiguous`, and 501 `no_admin_polygons` (NUSA-1).
+
+### Changed
+
+- Index format bumped to v2 with optional admin polygon and way-line sections;
+  readers still accept v1 when flags are zero (NUSA-1).
+
 ## [0.1.0] - 2026-11-15
 
 First public release. Project name: Nusapeta Place (previously placeid).

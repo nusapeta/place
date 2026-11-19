@@ -106,6 +106,7 @@ ADR yang sudah ada:
 - [0005: Engine pencarian](decisions/0005-engine.md)
 - [0006: Fuzzy v1](decisions/0006-fuzzy.md)
 - [0007: Importance](decisions/0007-importance.md)
+- [0008: Format index v2](decisions/0008-index-format-v2.md)
 
 ## Konvensi penulisan
 

@@ -17,7 +17,7 @@ root=$(realpath -m "$2")
 expected=$(cut -d' ' -f1 "$release/places.idx.sha256")
 actual=$(sha256sum "$release/places.idx" | cut -d' ' -f1)
 [[ "$expected" == "$actual" ]] || { echo "checksum mismatch" >&2; exit 1; }
-jq -e '.format_version == 1 and .counts.features > 0' "$release/places.idx.json" >/dev/null
+jq -e '(.format_version == 1 or .format_version == 2) and .counts.features > 0' "$release/places.idx.json" >/dev/null
 
 mkdir -p "$root"
 if [[ -L "$root/current" ]]; then

@@ -253,7 +253,7 @@ systemctl restart nusapeta-place
 
 `promote_release.sh` menolak rilis tanpa `places.idx`, manifest, atau
 `places.idx.sha256`; membandingkan SHA-256 file index; memastikan
-`format_version == 1` dan `counts.features > 0`; menyimpan target sebelumnya
+`format_version` 1 atau 2 dan `counts.features > 0`; menyimpan target sebelumnya
 di `previous`; lalu mengganti `current` dengan `mv -Tf`. Rollback menolak
 `previous` yang hilang atau tidak lengkap. Keduanya tidak me-restart service;
 restart tetap langkah eksplisit agar operator melihat downtime.

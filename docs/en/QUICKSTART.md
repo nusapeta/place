@@ -93,7 +93,7 @@ curl -fsS http://127.0.0.1:18090/healthz
 curl -fsS http://127.0.0.1:18090/version
 ```
 
-`/healthz` returns `format_version: 1`, not the route graph's format 5. Stop the
+`/healthz` returns `format_version: 2`, not the route graph's format 5. Stop the
 temporary server after both endpoints return 200.
 
 ## Local fixture

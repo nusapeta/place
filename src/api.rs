@@ -109,6 +109,14 @@ impl ApiError {
         }
     }
 
+    fn no_admin_polygons() -> Self {
+        Self {
+            status: StatusCode::NOT_IMPLEMENTED,
+            error: "no_admin_polygons",
+            reason: "index has no admin polygon data".to_string(),
+        }
+    }
+
     fn internal(reason: impl Into<String>) -> Self {
         Self {
             status: StatusCode::INTERNAL_SERVER_ERROR,
@@ -332,17 +340,122 @@ pub async fn reverse(
             "radius must be between 1 and 10000 meters",
         ));
     }
-    let row = nearest_row(&state.index, coordinates, radius);
-    let Some(row) = row else {
-        return Err(ApiError::not_found("no feature within radius"));
-    };
+    let (distance, row) = nearest_row(&state.index, coordinates, radius)
+        .ok_or_else(|| ApiError::not_found("no feature within radius"))?;
     metrics::counter!("nusa_place_results_total", "endpoint" => "reverse").increment(1);
-    Ok(Json(result_json(
-        &state.index,
-        row,
-        addressdetails,
-        &language,
-    )))
+    let mut value = result_json(&state.index, row, addressdetails, &language);
+    value["distance_m"] = json!((distance * 10.0).round() / 10.0);
+    Ok(Json(value))
+}
+
+/// Reverse-geocode a coordinate to the deepest admin area containing it.
+pub async fn admin_reverse(
+    State(state): State<ApiState>,
+    Query(query): Query<HashMap<String, String>>,
+) -> Result<Json<Value>, ApiError> {
+    reject_unsupported(&query)?;
+    validate_format(&query)?;
+    let (lat, lon) =
+        parse_coordinates(&query)?.ok_or_else(|| ApiError::invalid("lat and lon are required"))?;
+    if !state.index.has_admin_polygons() {
+        return Err(ApiError::no_admin_polygons());
+    }
+
+    let point = (
+        (lat * 10_000_000.0).round() as i32,
+        (lon * 10_000_000.0).round() as i32,
+    );
+    let mut containing: Vec<(u32, u8)> = Vec::new();
+    for admin_id in 1..=state.index.header.admin_count {
+        let Some(polygon) = state.index.admin_polygon(admin_id) else {
+            continue;
+        };
+        if point_in_polygon(point, &polygon.rings) {
+            let level = state
+                .index
+                .admin(admin_id)
+                .map(|admin| admin.level())
+                .unwrap_or(0);
+            containing.push((admin_id, level));
+        }
+    }
+    if containing.is_empty() {
+        return Err(ApiError::not_found("no admin area contains the point"));
+    }
+
+    let deepest = containing
+        .iter()
+        .map(|(_, level)| *level)
+        .max()
+        .unwrap_or(0);
+    let selected = containing
+        .iter()
+        .filter(|(_, level)| *level == deepest)
+        .map(|(admin_id, _)| *admin_id)
+        .min()
+        .unwrap_or(1);
+    let ambiguous = containing
+        .iter()
+        .filter(|(_, level)| *level == deepest)
+        .count()
+        > 1;
+
+    let mut parts = Vec::new();
+    let mut address = Map::new();
+    let mut admin_id = selected;
+    let mut guard = 0;
+    while admin_id != 0 && guard < 16 {
+        let Some(admin) = state.index.admin(admin_id) else {
+            break;
+        };
+        let name = state.index.admin_name(&admin).to_string();
+        if parts.last().is_none_or(|last| last != &name) {
+            parts.push(name.clone());
+        }
+        if let Some(key) = admin_address_key(admin.level()) {
+            address.entry(key).or_insert_with(|| Value::String(name));
+        }
+        admin_id = admin.parent_id();
+        guard += 1;
+    }
+    parts.push("Indonesia".to_string());
+    address.insert(
+        "country".to_string(),
+        Value::String("Indonesia".to_string()),
+    );
+    address.insert("country_code".to_string(), Value::String("id".to_string()));
+
+    let place_id = state
+        .index
+        .admin_polygon(selected)
+        .map(|polygon| polygon.place_id)
+        .unwrap_or(0);
+    let (_, osm_id) = decode(place_id).unwrap_or((3, 0));
+    let (lat_text, lon_text) = state
+        .index
+        .find_row(place_id)
+        .map(|row| {
+            let place = state.index.place(row);
+            (coordinate(place.lat_e7), coordinate(place.lon_e7))
+        })
+        .unwrap_or((coordinate(point.0), coordinate(point.1)));
+
+    metrics::counter!("nusa_place_results_total", "endpoint" => "admin_reverse").increment(1);
+    Ok(Json(json!({
+        "place_id": place_id,
+        "licence": LICENCE,
+        "osm_type": "relation",
+        "osm_id": osm_id,
+        "lat": lat_text,
+        "lon": lon_text,
+        "class": "boundary",
+        "type": "administrative",
+        "name": state.index.admin_name(&state.index.admin(selected).unwrap()),
+        "display_name": parts.join(", "),
+        "address": Value::Object(address),
+        "admin_id": selected,
+        "ambiguous": ambiguous,
+    })))
 }
 
 pub async fn lookup(
@@ -765,7 +878,7 @@ fn intersect(left: &[u32], right: &[u32]) -> Vec<u32> {
     result
 }
 
-fn nearest_row(index: &Index, (lat, lon): (f64, f64), radius_m: f64) -> Option<u32> {
+fn nearest_row(index: &Index, (lat, lon): (f64, f64), radius_m: f64) -> Option<(f64, u32)> {
     let lat_e7 = (lat * 1e7).round() as i32;
     let lon_e7 = (lon * 1e7).round() as i32;
     let grid = index.grid_info();
@@ -795,13 +908,8 @@ fn nearest_row(index: &Index, (lat, lon): (f64, f64), radius_m: f64) -> Option<u
                 if !seen.insert(*row) {
                     continue;
                 }
-                let place = index.place(*row);
-                let distance = haversine(
-                    lat,
-                    lon,
-                    place.lat_e7 as f64 / 1e7,
-                    place.lon_e7 as f64 / 1e7,
-                );
+
+                let distance = place_distance_m(index, *row, lat, lon);
                 if distance > radius_m {
                     continue;
                 }
@@ -823,7 +931,7 @@ fn nearest_row(index: &Index, (lat, lon): (f64, f64), radius_m: f64) -> Option<u
             }
         }
     }
-    best.map(|(_, row)| row)
+    best
 }
 
 fn priority(index: &Index, row: u32) -> u8 {
@@ -831,6 +939,92 @@ fn priority(index: &Index, row: u32) -> u8 {
         "place" | "boundary" => 3,
         "highway" => 2,
         _ => 1,
+    }
+}
+
+fn place_distance_m(index: &Index, row: u32, lat: f64, lon: f64) -> f64 {
+    let place = index.place(row);
+    let Some(points) = index.way_points(row) else {
+        return haversine(
+            lat,
+            lon,
+            place.lat_e7 as f64 / 1e7,
+            place.lon_e7 as f64 / 1e7,
+        );
+    };
+    let mut best = f64::INFINITY;
+    for segment in points.as_chunks::<2>().0.windows(2) {
+        let start = (segment[0][0], segment[0][1]);
+        let end = (segment[1][0], segment[1][1]);
+        best = best.min(segment_distance_m(lat, lon, start, end));
+    }
+    best
+}
+
+fn segment_distance_m(lat: f64, lon: f64, start: (i32, i32), end: (i32, i32)) -> f64 {
+    let scale = 111_320.0 * lat.to_radians().cos().max(0.01);
+    let (ax, ay) = (
+        (start.1 as f64 / 1e7 - lon) * scale,
+        (start.0 as f64 / 1e7 - lat) * 111_320.0,
+    );
+    let (bx, by) = (
+        (end.1 as f64 / 1e7 - lon) * scale,
+        (end.0 as f64 / 1e7 - lat) * 111_320.0,
+    );
+    let dx = bx - ax;
+    let dy = by - ay;
+    let length_squared = dx * dx + dy * dy;
+    if length_squared == 0.0 {
+        return ax.hypot(ay);
+    }
+    let t = ((-ax * dx - ay * dy) / length_squared).clamp(0.0, 1.0);
+    (ax + t * dx).hypot(ay + t * dy)
+}
+
+fn point_in_ring(point: (i32, i32), ring: &[i32]) -> bool {
+    let count = ring.len() / 2;
+    if count < 3 {
+        return false;
+    }
+    let (lat, lon) = (f64::from(point.0), f64::from(point.1));
+    let mut inside = false;
+    let mut previous = count - 1;
+    for current in 0..count {
+        let (current_lat, current_lon) = (
+            f64::from(ring[current * 2]),
+            f64::from(ring[current * 2 + 1]),
+        );
+        let (previous_lat, previous_lon) = (
+            f64::from(ring[previous * 2]),
+            f64::from(ring[previous * 2 + 1]),
+        );
+        if (current_lat > lat) != (previous_lat > lat)
+            && lon
+                < previous_lon
+                    + (lat - current_lat) * (previous_lon - current_lon)
+                        / (previous_lat - current_lat)
+        {
+            inside = !inside;
+        }
+        previous = current;
+    }
+    inside
+}
+
+fn point_in_polygon(point: (i32, i32), rings: &[&[i32]]) -> bool {
+    let Some(outer) = rings.first() else {
+        return false;
+    };
+    point_in_ring(point, outer) && !rings.iter().skip(1).any(|hole| point_in_ring(point, hole))
+}
+
+fn admin_address_key(level: u8) -> Option<&'static str> {
+    match level {
+        4 => Some("state"),
+        5 => Some("city"),
+        6 => Some("county"),
+        7 => Some("village"),
+        _ => None,
     }
 }
 
@@ -1029,5 +1223,65 @@ mod tests {
     #[test]
     fn haversine_known_distance() {
         assert!((haversine(-6.2, 106.8, -6.2, 106.9) - 11_090.0).abs() < 200.0);
+    }
+
+    #[test]
+    fn segment_distance_measures_perpendicular_offset() {
+        let distance = segment_distance_m(
+            -6.201,
+            106.9,
+            (-62_000_000, 1_068_000_000),
+            (-62_000_000, 1_069_500_000),
+        );
+        assert!((distance - 111.3).abs() < 5.0);
+    }
+
+    #[test]
+    fn reverse_uses_polyline_distance_for_long_road() {
+        let (_dir, index) = fixture_index();
+        let (distance, row) = nearest_row(&index, (-6.2, 106.94), 1_000.0).unwrap();
+        assert_eq!(index.normalized_name(row), "jalan panjang");
+        assert!(distance < 50.0, "unexpected distance {distance}");
+    }
+
+    #[test]
+    fn place_distance_uses_every_polyline_segment() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let mut data = crate::reader::tests::sample();
+        data.way_lines.push(crate::model::WayLine {
+            place_id: crate::place_id::encode(2, 20).unwrap(),
+            points: vec![
+                (-780_000_000, 1_100_000_000),
+                (-780_000_000, 1_101_000_000),
+                (-781_000_000, 1_101_000_000),
+            ],
+        });
+        let path = dir.path().join("segments.idx");
+        crate::writer::write_index(&data, &path).unwrap();
+        let index = Index::open(&path, false).unwrap();
+        let distance = place_distance_m(&index, 1, -78.05, 110.1);
+        assert!(distance < 10.0, "unexpected distance {distance}");
+    }
+
+    #[test]
+    fn admin_polygons_round_trip() {
+        let (_dir, index) = fixture_index();
+        assert!(index.has_admin_polygons());
+        let polygons: Vec<_> = (1..=index.header.admin_count)
+            .filter_map(|admin_id| index.admin_polygon(admin_id))
+            .collect();
+        assert_eq!(polygons.len(), index.header.admin_count as usize);
+        assert!(
+            polygons
+                .iter()
+                .all(|polygon| !polygon.rings.is_empty() && polygon.rings[0].len() >= 6)
+        );
+    }
+
+    #[test]
+    fn no_admin_polygons_error_is_not_implemented() {
+        let error = ApiError::no_admin_polygons();
+        assert_eq!(error.status, StatusCode::NOT_IMPLEMENTED);
+        assert_eq!(error.error, "no_admin_polygons");
     }
 }

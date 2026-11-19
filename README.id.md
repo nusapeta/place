@@ -122,7 +122,10 @@ occupancy grid ada di
 ## Scope v1
 
 - `GET /search?q=...` untuk nama tempat, POI, jalan, dan wilayah.
-- `GET /reverse?lat=...&lon=...` untuk fitur bernama terdekat.
+- `GET /reverse?lat=...&lon=...` untuk fitur bernama terdekat, memakai geometri
+  jalan untuk jalan panjang dan mengembalikan `distance_m`.
+- `GET /place/admin/reverse?lat=...&lon=...` untuk area admin terdalam dari
+  polygon yang tersimpan.
 - `GET /lookup?osm_ids=...` dan lookup `place_id`.
 - Hierarki administratif untuk `display_name` dan `address`, bila polygon
   tersedia.

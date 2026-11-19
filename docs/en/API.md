@@ -27,6 +27,7 @@ Coordinates are decimal strings. `place_id` and `osm_id` are numbers.
 |---|---|---|
 | GET | `/search` | Forward search by name |
 | GET | `/reverse` | Nearest feature to a coordinate |
+| GET | `/place/admin/reverse` | Deepest admin area for a coordinate |
 | GET | `/lookup` | Fetch features by ID |
 | GET | `/healthz` | Index status and server readiness |
 | GET | `/version` | Server and manifest versions |
@@ -124,8 +125,10 @@ The example is illustrative. `place_id`, `osm_id`, coordinates, and
 
 - Returns one nearest feature inside the radius.
 - If no feature exists, returns 404 with `error=not_found`.
-- Distance uses haversine. Feature-type priority applies only when distances
-  differ by less than 25 meters.
+- Distance uses stored way polylines for long roads and haversine to the
+  centroid for other features. Feature-type priority applies only when
+  distances differ by less than 25 meters.
+- `distance_m` reports the distance in meters, rounded to 0.1 m.
 - There is no house-number interpolation.
 
 ### 5.3 Example
@@ -158,9 +161,63 @@ GET /reverse?lat=-7.7956&lon=110.3695&radius=500&addressdetails=1
 }
 ```
 
-## 6. `GET /lookup`
+
+## 6. `GET /place/admin/reverse`
 
 ### 6.1 Parameters
+
+| Parameter | Required | Range | Note |
+|---|---|---|---|
+| `lat` | Yes | -90..90 | Latitude |
+| `lon` | Yes | -180..180 | Longitude |
+
+The response always includes `address`. `addressdetails` does not change it.
+
+### 6.2 Behavior
+
+- Returns the deepest admin area whose polygon contains the point.
+- Hierarchy comes from admin `parent_id`, not centroid distance.
+- `display_name` lists names from the deepest area to the province, then
+  `Indonesia`.
+- `address` uses `village` for level 7, `county` for level 6, `city` for level 5,
+  and `state` for level 4.
+- `ambiguous` is `true` when more than one polygon at the deepest level
+  contains the point; the smallest `admin_id` wins.
+- 404 if no polygon contains the point.
+- 501 with `error=no_admin_polygons` if the index has no polygon section.
+
+### 6.3 Example
+
+```http
+GET /place/admin/reverse?lat=-6.195&lon=106.815
+```
+
+```json
+{
+  "place_id": 1351079888221220,
+  "licence": "ODbL 1.0, © OpenStreetMap contributors",
+  "osm_type": "relation",
+  "osm_id": 1003,
+  "name": "Gambir Village",
+  "display_name": "Gambir Village, Gambir, Jakarta Pusat, Daerah Khusus Jakarta, Indonesia",
+  "address": {
+    "village": "Gambir Village",
+    "county": "Gambir",
+    "city": "Jakarta Pusat",
+    "state": "Daerah Khusus Jakarta",
+    "country": "Indonesia",
+    "country_code": "id"
+  },
+  "admin_id": 4,
+  "ambiguous": false
+}
+```
+
+The example uses `tests/fixtures/mini.pbf`, not production data.
+
+## 7. `GET /lookup`
+
+### 7.1 Parameters
 
 | Parameter | Required | Range | Note |
 |---|---|---|---|
@@ -171,14 +228,14 @@ GET /reverse?lat=-7.7956&lon=110.3695&radius=500&addressdetails=1
 Only one of `osm_ids` or `place_ids` MAY be sent. If both are sent, the server
 returns 400.
 
-### 6.2 Behavior
+### 7.2 Behavior
 
 - The result is an array containing only found IDs.
 - Result order follows request order.
 - Missing IDs are omitted, not treated as errors.
 - Prefixes `N`, `W`, `R` are case-insensitive.
 
-### 6.3 Example
+### 7.3 Example
 
 ```http
 GET /lookup?osm_ids=N123,W456&addressdetails=0
@@ -203,15 +260,15 @@ GET /lookup?osm_ids=N123,W456&addressdetails=0
 ]
 ```
 
-## 7. Operational endpoints
+## 8. Operational endpoints
 
-### 7.1 `/healthz`
+### 8.1 `/healthz`
 
 ```json
 {
   "status": "ok",
   "index": "places.idx",
-  "format_version": 1,
+  "format_version": 2,
   "manifest_sha256": "abc123..."
 }
 ```
@@ -219,13 +276,13 @@ GET /lookup?osm_ids=N123,W456&addressdetails=0
 Status is 200 only when the index is mapped and the header is valid. Status is
 503 when the index is not ready. This endpoint does not search.
 
-### 7.2 `/version`
+### 8.2 `/version`
 
 ```json
 {
   "server": "nusa-place 0.1.0",
   "api": "v1",
-  "format_version": 1,
+  "format_version": 2,
   "builder": "nusa-place-build 0.1.0",
   "pbf_sha256": "def456...",
   "index_sha256": "abc123...",
@@ -233,7 +290,7 @@ Status is 200 only when the index is mapped and the header is valid. Status is
 }
 ```
 
-### 7.3 `/metrics`
+### 8.3 `/metrics`
 
 Prometheus text format. Minimum metrics:
 
@@ -247,7 +304,7 @@ Prometheus text format. Minimum metrics:
 
 There are no `q`, `lat`, `lon`, or `place_id` labels.
 
-## 8. Errors
+## 9. Errors
 
 Shape:
 
@@ -263,6 +320,7 @@ Shape:
 | 400 | `invalid_request` | Missing parameter, wrong type, out of range |
 | 400 | `unsupported_parameter` | Known but unsupported parameter |
 | 404 | `not_found` | Reverse found no feature |
+| 501 | `no_admin_polygons` | Index has no admin polygon data |
 | 405 | `method_not_allowed` | Method other than GET |
 | 413 | `payload_too_large` | Body exceeds the limit |
 | 429 | `rate_limited` | Limited by the gateway |
@@ -272,7 +330,7 @@ Shape:
 `X-Request-ID` is always returned. For 429 and 503, include `Retry-After` in
 seconds.
 
-## 9. Nominatim compatibility
+## 10. Nominatim compatibility
 
 | Nominatim feature | Nusapeta Place v1 |
 |---|---|
@@ -288,12 +346,13 @@ seconds.
 | `place_id` | Stable from `(osm_type, osm_id)`, not Nominatim's `place_id` |
 | `osm_ids` | Can be used to migrate from Nominatim |
 | `/status` | Absent; use `/healthz` and `/version` |
+| `/place/admin/reverse` | Extension, absent from Nominatim |
 | `/deletable` | Absent |
 
 Response fields absent from `nusapeta-place` MUST NOT be assumed empty. Clients
 MUST check the fields they use.
 
-## 10. Attribution and license
+## 11. Attribution and license
 
 Every result contains:
 
@@ -304,7 +363,7 @@ licence: "ODbL 1.0, © OpenStreetMap contributors"
 Attribution MUST also be visible in documentation and in any UI that displays
 results. OSM data is ODbL 1.0. `nusapeta-place` code is MIT.
 
-## 11. Limits and versioning
+## 12. Limits and versioning
 
 - `q` is at most 256 bytes.
 - `limit` is at most 20.

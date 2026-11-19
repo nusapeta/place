@@ -2,8 +2,8 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft v1 |
-| Versi format | 1 |
+| Status | Draft v2 |
+| Versi format | 2 |
 | Endianness | Little-endian |
 | File | `places.idx` |
 | Manifest | `places.idx.json` |
@@ -13,6 +13,11 @@ Dokumen ini menetapkan kontrak file index. Layout byte boleh berubah sebelum
 fase 1 selesai, tetapi field, invariant, dan aturan validasi adalah kontrak
 yang harus dipertahankan. Setelah fase 1, perubahan layout menaikkan
 `format_version`.
+
+Format v2 menambah dua section opsional: polygon admin dan geometri jalan.
+Reader v2 masih membaca index v1 selama `flags` bernilai 0. Index dengan
+section opsional wajib memakai `format_version = 2` karena reader v1 menolak
+flag yang tidak dikenal.
 
 ## 1. Prinsip
 
@@ -55,6 +60,8 @@ yang harus dipertahankan. Setelah fase 1, perubahan layout menaikkan
 +----------------------+
 | Admin polygons       |  opsional, boleh length 0
 +----------------------+
+| Way lines             |  opsional, boleh length 0
++----------------------+
 | Trailer SHA-256      |  32 byte
 +----------------------+ EOF
 ```
@@ -66,8 +73,8 @@ Header berukuran tepat 256 byte.
 | Offset | Ukuran | Field | Isi |
 |---:|---:|---|---|
 | 0 | 8 | `magic` | `PLACEID\0` (identifier format, dipertahankan saat rename) |
-| 8 | 2 | `format_version` | `1` |
-| 10 | 2 | `flags` | Bit 0: admin polygons ada |
+| 8 | 2 | `format_version` | `1` atau `2` |
+| 10 | 2 | `flags` | Bit 0: admin polygons, bit 1: way lines |
 | 12 | 4 | `header_bytes` | `256` |
 | 16 | 4 | `feature_count` | Jumlah place record |
 | 20 | 4 | `admin_count` | Jumlah admin record |
@@ -103,7 +110,7 @@ Urutan section:
 | 8 | Grid |
 | 9 | Admin |
 | 10 | Admin polygons, boleh length 0 |
-| 11 | Reserved, harus length 0 |
+| 11 | Way lines, boleh length 0 |
 
 Offset 0 pada header bukan section. Section pertama minimal 256.
 
@@ -322,22 +329,65 @@ Aturan:
 
 ## 13. Admin polygons
 
-Section opsional. Jika `flags` bit 0 tidak diset, `len` harus 0. Section ini
-tidak dibutuhkan server untuk query; server memakai `admin_id` yang sudah
-dihitung saat build. Section boleh disimpan untuk audit dan rebuild parsial.
+Section opsional. Jika `flags` bit 0 tidak diset, `len` harus 0. Endpoint
+`/place/admin/reverse` memakai section ini untuk point-in-polygon.
 
-Format v1 draft:
+Header:
 
 | Offset | Ukuran | Field |
 |---:|---:|---|
 | 0 | 4 | `polygon_count` |
 | 4 | 4 | `reserved` |
 
-Diikuti record polygon dan array koordinat. Detail byte akan dibekukan pada
-fase 1. Jika format belum stabil, builder **MUST** menulis length 0 dan
-menyimpan polygon hanya di artefak build terpisah.
+Directory `polygon_count` entri 20 byte, diurutkan menaik berdasarkan
+`admin_id`:
 
-## 14. Trailer
+| Offset | Ukuran | Field |
+|---:|---:|---|
+| 0 | 4 | `admin_id` |
+| 4 | 8 | `place_id` |
+| 12 | 4 | `offset` |
+| 16 | 4 | `len` |
+
+`offset` relatif terhadap akhir directory. Payload tiap polygon:
+
+| Ukuran | Field |
+|---:|---|
+| 4 | `ring_count` |
+| 4 | `point_count` per ring, dalam `i32`, genap, minimal 6 |
+| `point_count * 4` | pasangan `lat_e7`, `lon_e7` berurutan |
+
+Aturan:
+
+- `admin_id` unik, antara 1 dan `admin_count`.
+- `place_id` adalah ID relasi boundary yang valid.
+- `offset + len` tidak boleh melewati section.
+- `len` harus sama dengan ukuran payload yang diparse.
+
+## 14. Way lines
+
+Section opsional. Jika `flags` bit 1 tidak diset, `len` harus 0. Endpoint
+`/reverse` memakai section ini untuk jarak ke geometri jalan.
+
+Header:
+
+| Offset | Ukuran | Field |
+|---:|---:|---|
+| 0 | 4 | `way_count` |
+| 4 | 4 | `reserved` |
+
+Directory `way_count` entri 12 byte, diurutkan menaik berdasarkan row place:
+
+| Offset | Ukuran | Field |
+|---:|---:|---|
+| 0 | 4 | `row` |
+| 4 | 4 | `offset` |
+| 8 | 4 | `points` |
+
+`offset` relatif terhadap akhir directory. Payload adalah `points` nilai
+`i32` berurutan: pasangan `lat_e7`, `lon_e7`. `points` genap dan minimal 4.
+
+## 15. Trailer
 
 32 byte terakhir adalah SHA-256 dari semua byte sebelum trailer. Trailer tidak
 termasuk section table. Manifest memuat checksum yang sama.
@@ -346,13 +396,13 @@ Server **MUST** memvalidasi trailer jika `--verify-checksum` diberikan.
 Tanpa flag, server **MUST** memvalidasi header, section bounds, dan trailer
 length, tetapi **MAY** melewati hashing penuh.
 
-## 15. Manifest
+## 16. Manifest
 
 Manifest adalah JSON terpisah, ditulis setelah index selesai. Field minimum:
 
 ```json
 {
-  "format_version": 1,
+  "format_version": 2,
   "builder": "nusa-place-build 0.1.0",
   "built_at": "2026-11-13T00:00:00Z",
   "pbf": {
@@ -383,7 +433,7 @@ body, sama dengan nilai di trailer. `index.bytes` adalah ukuran total file
 termasuk trailer 32 byte. `index.sha256` harus sama untuk PBF dan builder yang
 sama.
 
-## 16. Validasi
+## 17. Validasi
 
 Server **MUST** memeriksa:
 
@@ -391,24 +441,27 @@ Server **MUST** memeriksa:
 2. `header_bytes` minimal 256.
 3. Semua section offset dan length berada di dalam file, tidak overlap, dan
    dialign 8 byte.
-4. `sections[11].len == 0`.
-5. Flag admin polygons konsisten dengan length section 10.
-6. `feature_count`, `admin_count`, `class_count`, dan `type_count` masuk akal
+4. `sections[10].len == 0` jika dan hanya jika bit 0 tidak diset.
+5. `sections[11].len == 0` jika dan hanya jika bit 1 tidak diset.
+6. Isi polygon dan way lines valid menurut section 13 dan 14.
+7. `feature_count`, `admin_count`, `class_count`, dan `type_count` masuk akal
    terhadap ukuran section.
-7. Record places terurut dan `place_id` unik.
-8. Semua offset string dan name variant berada di dalam section.
-9. Semua string UTF-8 valid.
-10. Semua posting row kurang dari `feature_count`, terurut, dan unik.
-11. FST bisa diparse.
-12. Grid menutupi bounding box index.
-13. Parent admin ada dan tidak ada siklus.
-14. Trailer 32 byte dan, bila diminta, checksum cocok.
+8. Record places terurut dan `place_id` unik.
+9. Semua offset string dan name variant berada di dalam section.
+10. Semua string UTF-8 valid.
+11. Semua posting row kurang dari `feature_count`, terurut, dan unik.
+12. FST bisa diparse.
+13. Grid menutupi bounding box index.
+14. Parent admin ada dan tidak ada siklus.
+15. Trailer 32 byte dan, bila diminta, checksum cocok.
 
 Jika salah satu gagal, server **MUST** menolak index dan exit non-zero.
 
-## 17. Versioning dan determinisme
+## 18. Versioning dan determinisme
 
 - Perubahan layout, field, atau arti nilai menaikkan `format_version`.
+- Reader v2 **MUST** menerima v1 hanya bila `flags == 0`.
+- Index dengan section opsional **MUST** memakai `format_version = 2`.
 - Reader **MUST** menolak versi mayor yang tidak dikenal.
 - Penambahan field di akhir record boleh dilakukan dengan menaikkan versi.
 - Builder **MUST** mengurutkan places, postings, strings dictionary, dan admin
